@@ -1,13 +1,10 @@
 package com.ogic.prescriptionsyntheticsystem.component;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.ogic.prescriptionsyntheticsystem.entity.Check;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import com.ogic.prescriptionsyntheticsystem.entity.CheckTable;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
@@ -24,12 +21,12 @@ public class CheckImportTool extends ExcelImportTool {
     public List readExcel(int sheetId){
         Sheet sheet = workbook.getSheetAt(sheetId);
         int rowNum = sheet.getPhysicalNumberOfRows();
-        List<Check> checkList = new ArrayList<>(rowNum-1);
+        List<CheckTable> checkTableList = new ArrayList<>(rowNum-1);
         for (int i = 1; i < rowNum; i++){
             Row row = sheet.getRow(i);
-            Check check = new Check();
+            CheckTable checkTable = new CheckTable();
             try {
-                check.setId(i)
+                checkTable.setId(i)
                         .setPatientId((int) (3 * Double.parseDouble(row.getCell(0).toString())))
                         .setVisits((int) Double.parseDouble(row.getCell(1).toString()))
                         .setMainDiagnosis(row.getCell(2).toString())
@@ -46,12 +43,12 @@ public class CheckImportTool extends ExcelImportTool {
                         .setResultUnit(row.getCell(16).toString());
 
             }catch (NullPointerException e){
-                check.setResult("NULL")
+                checkTable.setResult("NULL")
                         .setResultUnit("NULL");
             }finally {
-                checkList.add(check);
+                checkTableList.add(checkTable);
             }
         }
-        return checkList;
+        return checkTableList;
     }
 }

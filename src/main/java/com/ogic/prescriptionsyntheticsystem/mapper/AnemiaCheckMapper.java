@@ -1,7 +1,7 @@
 package com.ogic.prescriptionsyntheticsystem.mapper;
 
 
-import com.ogic.prescriptionsyntheticsystem.entity.Check;
+import com.ogic.prescriptionsyntheticsystem.entity.CheckTable;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -16,7 +16,7 @@ import java.util.List;
 public interface AnemiaCheckMapper {
     /**
      * 插入单个检验单到表中
-     * @param check 检验单
+     * @param checkTable 检验单
      * @return  插入结果
      */
     @Insert("INSERT INTO AnemiaCheck(" +
@@ -48,7 +48,7 @@ public interface AnemiaCheckMapper {
             "#{projectCode}," +
             "#{result}," +
             "#{resultUnit})")
-    Integer insertAnemiaCheck(Check check);
+    Integer insertAnemiaCheck(CheckTable checkTable);
 
 
     /**
@@ -90,7 +90,7 @@ public interface AnemiaCheckMapper {
             "#{list.resultUnit})" +
             "</foreach>" +
             "</script>")
-    Integer insertAnemiaCheckList(@Param(value = "list") List<Check> list);
+    Integer insertAnemiaCheckList(@Param(value = "list") List<CheckTable> list);
 
 
     /**
@@ -98,7 +98,7 @@ public interface AnemiaCheckMapper {
      * @return  贫血检验单列表
      */
     @Select("select * from AnemiaCheck")
-    List<Check> getAllAnemiaCheck();
+    List<CheckTable> getAllAnemiaCheck();
 
     /**
      * 获得指定患者ID的所有贫血检验单
@@ -106,5 +106,5 @@ public interface AnemiaCheckMapper {
      * @return  贫血检验单列表
      */
     @Select("select * from AnemiaCheck where patientId = #{patientId}")
-    List<Check> getAllAnemiaCheckForPatient(int patientId);
+    List<CheckTable> getAllAnemiaCheckForPatient(int patientId);
 }

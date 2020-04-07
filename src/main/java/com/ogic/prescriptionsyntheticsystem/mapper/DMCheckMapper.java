@@ -1,8 +1,7 @@
 package com.ogic.prescriptionsyntheticsystem.mapper;
 
 
-import com.ogic.prescriptionsyntheticsystem.entity.Check;
-import com.ogic.prescriptionsyntheticsystem.entity.Check;
+import com.ogic.prescriptionsyntheticsystem.entity.CheckTable;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -17,7 +16,7 @@ import java.util.List;
 public interface DMCheckMapper {
     /**
      * 插入单个检验单到表中
-     * @param check 检验单
+     * @param checkTable 检验单
      * @return  插入结果
      */
     @Insert("INSERT INTO DMCheck(" +
@@ -49,7 +48,7 @@ public interface DMCheckMapper {
             "#{projectCode}," +
             "#{result}," +
             "#{resultUnit})")
-    Integer insertDMCheck(Check check);
+    Integer insertDMCheck(CheckTable checkTable);
 
 
     /**
@@ -91,7 +90,7 @@ public interface DMCheckMapper {
             "#{list.resultUnit})" +
             "</foreach>" +
             "</script>")
-    Integer insertDMCheckList(@Param(value = "list") List<Check> list);
+    Integer insertDMCheckList(@Param(value = "list") List<CheckTable> list);
 
 
     /**
@@ -99,7 +98,7 @@ public interface DMCheckMapper {
      * @return  糖尿病检验单列表
      */
     @Select("select * from DMCheck")
-    List<Check> getAllDMCheck();
+    List<CheckTable> getAllDMCheck();
 
     /**
      * 获得指定患者ID的所有糖尿病检验单
@@ -107,5 +106,5 @@ public interface DMCheckMapper {
      * @return  糖尿病检验单列表
      */
     @Select("select * from DMCheck where patientId = #{patientId}")
-    List<Check> getAllDMCheckForPatient(int patientId);
+    List<CheckTable> getAllDMCheckForPatient(int patientId);
 }

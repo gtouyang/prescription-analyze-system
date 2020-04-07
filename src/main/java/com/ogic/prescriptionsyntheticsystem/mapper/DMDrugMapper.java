@@ -1,6 +1,6 @@
 package com.ogic.prescriptionsyntheticsystem.mapper;
 
-import com.ogic.prescriptionsyntheticsystem.entity.Drug;
+import com.ogic.prescriptionsyntheticsystem.entity.DrugTable;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -15,7 +15,7 @@ import java.util.List;
 public interface DMDrugMapper {
     /**
      * 插入单个开药单到表中
-     * @param drug 开药单
+     * @param drugTable 开药单
      * @return  插入结果
      */
     @Insert("INSERT INTO DMDrug(" +
@@ -47,7 +47,7 @@ public interface DMDrugMapper {
             "#{usage}," +
             "#{dosage}," +
             "#{frequency})")
-    Integer insertDMDrug(Drug drug);
+    Integer insertDMDrug(DrugTable drugTable);
 
 
     /**
@@ -89,14 +89,14 @@ public interface DMDrugMapper {
             "#{list.frequency})" +
             "</foreach>" +
             "</script>")
-    Integer insertDMDrugList(@Param(value = "list") List<Drug> list);
+    Integer insertDMDrugList(@Param(value = "list") List<DrugTable> list);
 
     /**
      * 获得所有的糖尿病用药单
      * @return  糖尿病用药单列表
      */
     @Select("select * from DMDrug")
-    List<Drug> getAllDMDrug();
+    List<DrugTable> getAllDMDrug();
 
     /**
      * 获得指定患者ID的所有糖尿病用药单
@@ -104,6 +104,6 @@ public interface DMDrugMapper {
      * @return  糖尿病用药单列表
      */
     @Select("select * from DMDrug where patientId = #{patientId}")
-    List<Drug> getAllDMDrugForPatient(int patientId);
+    List<DrugTable> getAllDMDrugForPatient(int patientId);
 
 }

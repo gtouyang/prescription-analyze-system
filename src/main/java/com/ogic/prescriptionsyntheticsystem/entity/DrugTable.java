@@ -11,7 +11,7 @@ import lombok.experimental.Accessors;
 @Data
 @NoArgsConstructor
 @Accessors(chain = true)
-public class Drug {
+public class DrugTable {
 
     /**
      * 数据ID

@@ -1,6 +1,6 @@
 package com.ogic.prescriptionsyntheticsystem.component;
 
-import com.ogic.prescriptionsyntheticsystem.entity.Drug;
+import com.ogic.prescriptionsyntheticsystem.entity.DrugTable;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import java.io.IOException;
@@ -19,12 +19,12 @@ public class DrugImportTool extends ExcelImportTool{
     public List readExcel(int sheetId){
         Sheet sheet = workbook.getSheetAt(sheetId);
         int rowNum = sheet.getPhysicalNumberOfRows();
-        List<Drug> drugList = new ArrayList<>(rowNum-1);
+        List<DrugTable> drugTableList = new ArrayList<>(rowNum-1);
         for (int i = 1; i < rowNum; i++){
             Row row = sheet.getRow(i);
-            Drug drug = new Drug();
+            DrugTable drugTable = new DrugTable();
             try {
-                drug.setId(i)
+                drugTable.setId(i)
                         .setPatientId((int) (3 * Double.parseDouble(row.getCell(0).toString())))
                         .setVisits((int) Double.parseDouble(row.getCell(1).toString()))
                         .setMainDiagnosis(row.getCell(2).toString())
@@ -41,11 +41,11 @@ public class DrugImportTool extends ExcelImportTool{
                         .setDosage(Double.parseDouble(row.getCell(14).toString()));
 
             }catch (NumberFormatException e){
-                drug.setDosage(0.0);
+                drugTable.setDosage(0.0);
             }finally {
-                drugList.add(drug);
+                drugTableList.add(drugTable);
             }
         }
-        return drugList;
+        return drugTableList;
     }
 }

@@ -1,15 +1,6 @@
 package com.ogic.prescriptionsyntheticsystem;
 
-import com.ogic.prescriptionsyntheticsystem.component.DrugImportTool;
-import com.ogic.prescriptionsyntheticsystem.component.ExcelImportTool;
-import com.ogic.prescriptionsyntheticsystem.entity.Drug;
-import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import javax.annotation.Resource;
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.List;
 
 @SpringBootTest
 class PrescriptionSyntheticSystemApplicationTests {

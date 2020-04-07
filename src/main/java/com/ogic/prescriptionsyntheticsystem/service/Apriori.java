@@ -2,16 +2,18 @@ package com.ogic.prescriptionsyntheticsystem.service;
 
 import com.ogic.prescriptionsyntheticsystem.entity.Sample;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author ogic
+ */
 public class Apriori {
     public double supportDegree(List<Sample> samples, Sample a){
         int includeNum = 0;
         for (Sample s: samples){
-            if (s.diagnosisInclude(a) && s.medicineInclude(a)){
+            if (s.diagnosisInclude(a) && s.drugInclude(a)){
                 includeNum++;
             }
         }
@@ -24,7 +26,7 @@ public class Apriori {
         for (Sample s: samples){
             if (s.diagnosisInclude(a)){
                 diagnosisIncludeNum ++;
-                if (s.medicineInclude(a)){
+                if (s.drugInclude(a)){
                     medicineIncludeNum++;
                 }
             }
@@ -41,7 +43,7 @@ public class Apriori {
         for (Sample s: samples){
             if (s.diagnosisInclude(a)){
                 diagnosisIncludeNum ++;
-                if (s.medicineInclude(a)){
+                if (s.drugInclude(a)){
                     medicineIncludeNum++;
                 }
             }

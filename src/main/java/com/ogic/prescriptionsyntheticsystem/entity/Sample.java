@@ -17,6 +17,11 @@ public class Sample {
     private int id;
 
     /**
+     * 患者ID
+     */
+    private int patientId;
+
+    /**
      * 诊断
      */
     private List<Integer> diagnosis;
@@ -24,10 +29,21 @@ public class Sample {
     /**
      * 用药
      */
-    private List<Integer> medicine;
+    private List<Integer> drugs;
 
-    public boolean diagnosisInclude(Sample sample){
-        for (Integer i : sample.diagnosis){
+    /**
+     * 具体用量及单位
+     */
+    private List<DrugDetail> drugDetails;
+
+
+    /**
+     * 是否包含other中的诊断
+     * @param other
+     * @return
+     */
+    public boolean diagnosisInclude(Sample other){
+        for (Integer i : other.diagnosis){
             if (!diagnosis.contains(i)){
                 return false;
             }
@@ -35,9 +51,14 @@ public class Sample {
         return true;
     }
 
-    public boolean medicineInclude(Sample sample){
-        for (Integer i : sample.medicine){
-            if (!medicine.contains(i)){
+    /**
+     * 是否包含other中的用药
+     * @param other
+     * @return
+     */
+    public boolean drugInclude(Sample other){
+        for (Integer i : other.drugs){
+            if (!drugs.contains(i)){
                 return false;
             }
         }

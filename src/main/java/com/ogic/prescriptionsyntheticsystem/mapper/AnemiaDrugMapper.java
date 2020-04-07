@@ -1,6 +1,6 @@
 package com.ogic.prescriptionsyntheticsystem.mapper;
 
-import com.ogic.prescriptionsyntheticsystem.entity.Drug;
+import com.ogic.prescriptionsyntheticsystem.entity.DrugTable;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -15,7 +15,7 @@ import java.util.List;
 public interface AnemiaDrugMapper {
     /**
      * 插入单个开药单到表中
-     * @param drug 开药单
+     * @param drugTable 开药单
      * @return  插入结果
      */
     @Insert("INSERT INTO AnemiaDrug(" +
@@ -47,7 +47,7 @@ public interface AnemiaDrugMapper {
             "#{usage}," +
             "#{dosage}," +
             "#{frequency})")
-    Integer insertAnemiaDrug(Drug drug);
+    Integer insertAnemiaDrug(DrugTable drugTable);
 
 
     /**
@@ -89,14 +89,14 @@ public interface AnemiaDrugMapper {
             "#{list.frequency})" +
             "</foreach>" +
             "</script>")
-    Integer insertAnemiaDrugList(@Param(value = "list") List<Drug> list);
+    Integer insertAnemiaDrugList(@Param(value = "list") List<DrugTable> list);
 
     /**
      * 获得所有的贫血用药单
      * @return  贫血用药单列表
      */
     @Select("select * from AnemiaDrug")
-    List<Drug> getAllAnemiaDrug();
+    List<DrugTable> getAllAnemiaDrug();
 
     /**
      * 获得指定患者ID的所有贫血用药单
@@ -104,6 +104,6 @@ public interface AnemiaDrugMapper {
      * @return  贫血用药单列表
      */
     @Select("select * from AnemiaDrug where patientId = #{patientId}")
-    List<Drug> getAllAnemiaDrugForPatient(int patientId);
+    List<DrugTable> getAllAnemiaDrugForPatient(int patientId);
 
 }
