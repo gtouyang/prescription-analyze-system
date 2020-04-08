@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Data
@@ -63,5 +64,16 @@ public class Sample {
             }
         }
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "\n\nSample{" +
+                "id=" + id +
+                ", \npatientId=" + patientId +
+                ", \ndiagnosis=" + Arrays.toString(diagnosis.toArray()) +
+                ", \ndrugs=" + Arrays.toString(drugs.toArray()) +
+                ", \ndrugDetails=" + Arrays.toString(drugDetails.toArray()) +
+                "}";
     }
 }

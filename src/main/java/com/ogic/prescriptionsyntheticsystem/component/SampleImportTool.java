@@ -8,6 +8,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -46,7 +47,7 @@ public class SampleImportTool extends ExcelImportTool {
 
             for (int j = 3; j < 6; j++) {
                 String tempStr = row.getCell(j).toString();
-                if (tempStr != null && !tempStr.isEmpty()) {
+                if (tempStr != null && !tempStr.isEmpty() && !"NULL".equals(tempStr)) {
                     int tempDiagnosisId = countDiagnosis(tempStr);
                     if (!thisOne.getDiagnosis().contains(tempDiagnosisId)) {
                         thisOne.getDiagnosis().add(tempDiagnosisId);
@@ -62,7 +63,8 @@ public class SampleImportTool extends ExcelImportTool {
                     DrugDetail newDrugDetail = new DrugDetail(
                             tempDrugId,
                             (int) Double.parseDouble(row.getCell(10).toString()),
-                            row.getCell(12).toString());
+                            row.getCell(17).toString());
+                    thisOne.getDrugDetails().add(newDrugDetail);
                 } else {
                     DrugDetail thisDrugDetail = thisOne.getDrugDetails().get(thisOne.getDrugs().indexOf(tempDrugId));
                     if (thisDrugDetail.getDrugId() == tempDrugId) {
@@ -77,6 +79,10 @@ public class SampleImportTool extends ExcelImportTool {
 
     private List<String> diagnosisList = new ArrayList<String>();
 
+    public String printDiagnosisList(){
+        return Arrays.toString(diagnosisList.toArray());
+    }
+
     private int countDiagnosis(String diagnosis) {
         if (diagnosisList.contains(diagnosis)) {
             return diagnosisList.indexOf(diagnosis);
@@ -87,6 +93,10 @@ public class SampleImportTool extends ExcelImportTool {
     }
 
     private List<String> drugList = new ArrayList<String>();
+
+    public String printDrugList(){
+        return Arrays.toString(drugList.toArray());
+    }
 
     private int countDrug(String drug) {
         if (drugList.contains(drug)) {
