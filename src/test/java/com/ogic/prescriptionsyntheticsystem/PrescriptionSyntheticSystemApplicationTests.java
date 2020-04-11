@@ -5,16 +5,15 @@ import com.ogic.prescriptionsyntheticsystem.component.ExcelImportTool;
 import com.ogic.prescriptionsyntheticsystem.component.SampleCleanTool;
 import com.ogic.prescriptionsyntheticsystem.component.SampleImportTool;
 import com.ogic.prescriptionsyntheticsystem.entity.Sample;
+import com.ogic.prescriptionsyntheticsystem.service.Apriori;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.relational.core.sql.In;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 @SpringBootTest
 class PrescriptionSyntheticSystemApplicationTests {
@@ -61,6 +60,14 @@ class PrescriptionSyntheticSystemApplicationTests {
     }
 
     @Test
+    public void aprioriTest() throws IOException, ParseException {
+        SampleImportTool sampleImportTool = new SampleImportTool("/home/ogic/Desktop/data.xls");
+        List<Sample> sampleList = sampleImportTool.readExcel(1);
+        sampleCleanTool.clean(sampleList);
+        Apriori apriori = new Apriori(sampleList, sampleImportTool.getDiagnosisList(), sampleImportTool.getDrugList());
+    }
+
+    @Test
     public void sortTest(){
         List<Integer> list = new ArrayList<>();
         list.add(1);
@@ -69,12 +76,7 @@ class PrescriptionSyntheticSystemApplicationTests {
         list.add(9);
         list.add(7);
         list.add(5);
-        list.sort(new Comparator<Integer>() {
-            @Override
-            public int compare(Integer o1, Integer o2) {
-                return o1-o2;
-            }
-        });
+        list.sort(Comparator.comparingInt(o -> o));
         System.out.println(Arrays.toString(list.toArray()));
     }
 }

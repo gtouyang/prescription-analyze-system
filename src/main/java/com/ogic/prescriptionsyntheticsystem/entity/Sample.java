@@ -37,33 +37,52 @@ public class Sample {
      */
     private List<DrugDetail> drugDetails;
 
-
-    /**
-     * 是否包含other中的诊断
-     * @param other
-     * @return
-     */
-    public boolean diagnosisInclude(Sample other){
-        for (Integer i : other.diagnosis){
-            if (!diagnosis.contains(i)){
-                return false;
-            }
-        }
-        return true;
+    public Sample() {
     }
 
-    /**
-     * 是否包含other中的用药
-     * @param other
-     * @return
-     */
-    public boolean drugInclude(Sample other){
-        for (Integer i : other.drugs){
-            if (!drugs.contains(i)){
-                return false;
-            }
-        }
-        return true;
+    public int getId() {
+        return id;
+    }
+
+    public Sample setId(int id) {
+        this.id = id;
+        return this;
+    }
+
+    public int getPatientId() {
+        return patientId;
+    }
+
+    public Sample setPatientId(int patientId) {
+        this.patientId = patientId;
+        return this;
+    }
+
+    public List<Integer> getDiagnosis() {
+        return diagnosis;
+    }
+
+    public Sample setDiagnosis(List<Integer> diagnosis) {
+        this.diagnosis = diagnosis;
+        return this;
+    }
+
+    public List<Integer> getDrugs() {
+        return drugs;
+    }
+
+    public Sample setDrugs(List<Integer> drugs) {
+        this.drugs = drugs;
+        return this;
+    }
+
+    public List<DrugDetail> getDrugDetails() {
+        return drugDetails;
+    }
+
+    public Sample setDrugDetails(List<DrugDetail> drugDetails) {
+        this.drugDetails = drugDetails;
+        return this;
     }
 
     @Override

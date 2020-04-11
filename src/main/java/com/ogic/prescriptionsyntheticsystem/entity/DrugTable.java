@@ -88,4 +88,141 @@ public class DrugTable {
      */
     private String frequency;
 
+    public DrugTable() {
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public DrugTable setId(int id) {
+        this.id = id;
+        return this;
+    }
+
+    public int getPatientId() {
+        return patientId;
+    }
+
+    public DrugTable setPatientId(int patientId) {
+        this.patientId = patientId;
+        return this;
+    }
+
+    public int getVisits() {
+        return visits;
+    }
+
+    public DrugTable setVisits(int visits) {
+        this.visits = visits;
+        return this;
+    }
+
+    public String getMainDiagnosis() {
+        return mainDiagnosis;
+    }
+
+    public DrugTable setMainDiagnosis(String mainDiagnosis) {
+        this.mainDiagnosis = mainDiagnosis;
+        return this;
+    }
+
+    public String getMinorDiagnosis1() {
+        return minorDiagnosis1;
+    }
+
+    public DrugTable setMinorDiagnosis1(String minorDiagnosis1) {
+        this.minorDiagnosis1 = minorDiagnosis1;
+        return this;
+    }
+
+    public String getMinorDiagnosis2() {
+        return minorDiagnosis2;
+    }
+
+    public DrugTable setMinorDiagnosis2(String minorDiagnosis2) {
+        this.minorDiagnosis2 = minorDiagnosis2;
+        return this;
+    }
+
+    public String getMinorDiagnosis3() {
+        return minorDiagnosis3;
+    }
+
+    public DrugTable setMinorDiagnosis3(String minorDiagnosis3) {
+        this.minorDiagnosis3 = minorDiagnosis3;
+        return this;
+    }
+
+    public String getSex() {
+        return sex;
+    }
+
+    public DrugTable setSex(String sex) {
+        this.sex = sex;
+        return this;
+    }
+
+    public short getAge() {
+        return age;
+    }
+
+    public DrugTable setAge(short age) {
+        this.age = age;
+        return this;
+    }
+
+    public String getProject() {
+        return project;
+    }
+
+    public DrugTable setProject(String project) {
+        this.project = project;
+        return this;
+    }
+
+    public int getAmount() {
+        return amount;
+    }
+
+    public DrugTable setAmount(int amount) {
+        this.amount = amount;
+        return this;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public DrugTable setUnit(String unit) {
+        this.unit = unit;
+        return this;
+    }
+
+    public String getUsage() {
+        return usage;
+    }
+
+    public DrugTable setUsage(String usage) {
+        this.usage = usage;
+        return this;
+    }
+
+    public double getDosage() {
+        return dosage;
+    }
+
+    public DrugTable setDosage(double dosage) {
+        this.dosage = dosage;
+        return this;
+    }
+
+    public String getFrequency() {
+        return frequency;
+    }
+
+    public DrugTable setFrequency(String frequency) {
+        this.frequency = frequency;
+        return this;
+    }
 }
