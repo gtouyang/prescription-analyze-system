@@ -65,6 +65,16 @@ class PrescriptionSyntheticSystemApplicationTests {
         List<Sample> sampleList = sampleImportTool.readExcel(1);
         sampleCleanTool.clean(sampleList);
         Apriori apriori = new Apriori(sampleList, sampleImportTool.getDiagnosisList(), sampleImportTool.getDrugList());
+        apriori.run();
+        Map<String, Double> result = apriori.getResult();
+        Iterator<Map.Entry<String, Double>> iterator = result.entrySet().iterator();
+        while (iterator.hasNext()){
+            Map.Entry<String, Double> entry = iterator.next();
+            double temp = entry.getValue();
+            if (temp > apriori.MIN_SUPPORT_DEGREE) {
+                System.out.println(entry.getKey() + " = " + String.format("%.6f", temp));
+            }
+        }
     }
 
     @Test

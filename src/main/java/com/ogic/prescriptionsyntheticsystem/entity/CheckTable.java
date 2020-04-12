@@ -9,8 +9,8 @@ import lombok.experimental.Accessors;
  * 糖尿病检验
  */
 @Data
-@NoArgsConstructor
-@Accessors(chain = true)
+//@NoArgsConstructor
+//@Accessors(chain = true)
 public class CheckTable {
 
     /**

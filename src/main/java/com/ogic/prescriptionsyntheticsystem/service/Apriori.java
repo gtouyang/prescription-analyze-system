@@ -11,7 +11,7 @@ import java.util.*;
  */
 public class Apriori {
 
-    private final double MIN_SUPPORT_DEGREE = 0.0001;
+    public final double MIN_SUPPORT_DEGREE = 0.001;
 
     private final List<Sample> sampleList;
 
@@ -21,7 +21,7 @@ public class Apriori {
 
     private final List<List<Integer>> data;
 
-    private Map<List<Integer>, Double> result;
+    private Map<String, Double> result;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -57,9 +57,10 @@ public class Apriori {
             targetList.add(list);
         }
         while (!targetList.isEmpty()) {
+            logger.info("this turn's target:" + targetList + "\n");
             for (List<Integer> target : targetList) {
                 double temp = supportDegree(target);
-                result.put(target, temp);
+                result.put(Arrays.toString(target.toArray()), temp);
                 if (temp > MIN_SUPPORT_DEGREE) {
                     fixableList.add(target);
                 }
@@ -73,11 +74,12 @@ public class Apriori {
                     }
                 }
             }
+            fixableList.clear();
         }
 
     }
 
-    public Map<List<Integer>, Double> getResult() {
+    public Map<String, Double> getResult() {
         return result;
     }
 

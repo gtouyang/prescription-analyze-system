@@ -8,8 +8,8 @@ import java.util.Arrays;
 import java.util.List;
 
 @Data
-@NoArgsConstructor
-@Accessors(chain = true)
+//@NoArgsConstructor
+//@Accessors(chain = true)
 public class Sample {
 
     /**

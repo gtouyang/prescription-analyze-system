@@ -6,8 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 @Data
-@AllArgsConstructor
-@Accessors(chain = true)
+//@AllArgsConstructor
 public class DrugDetail {
 
     /**
