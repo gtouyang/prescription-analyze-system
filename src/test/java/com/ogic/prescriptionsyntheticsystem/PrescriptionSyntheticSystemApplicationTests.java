@@ -7,12 +7,14 @@ import com.ogic.prescriptionsyntheticsystem.service.Apriori;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.*;
 
+@EnableAsync
 @SpringBootTest
 class PrescriptionSyntheticSystemApplicationTests {
 
@@ -58,11 +60,11 @@ class PrescriptionSyntheticSystemApplicationTests {
     }
 
     @Test
-    public void aprioriTest() throws IOException, ParseException {
+    public void aprioriTest() throws IOException, ParseException, InterruptedException {
         SampleImportTool sampleImportTool = new SampleImportTool("/home/ogic/Desktop/data.xls");
         List<Sample> sampleList = sampleImportTool.readExcel(1);
         sampleCleanTool.clean(sampleList);
-        Apriori apriori = new Apriori(sampleList.subList(0, 400), sampleImportTool.getDiagnosisList(), sampleImportTool.getDrugList());
+        Apriori apriori = new Apriori(sampleList, sampleImportTool.getDiagnosisList(), sampleImportTool.getDrugList());
         apriori.run();
         Map<String, Double> supportDegreeResult = apriori.getSupportDegreeResult();
         Iterator<Map.Entry<String, Double>> iterator = supportDegreeResult.entrySet().iterator();
@@ -81,6 +83,9 @@ class PrescriptionSyntheticSystemApplicationTests {
             if (temp > apriori.MIN_SUPPORT_DEGREE) {
                 System.out.println(entry.getKey() + " = " + String.format("%.6f", temp));
             }
+        }
+        while (!apriori.isBelieveDegreeFinished()){
+            wait(1000l);
         }
         Map<String, Double> fixableRuleMap = apriori.getFixableRuleMap();
         iterator = fixableRuleMap.entrySet().iterator();

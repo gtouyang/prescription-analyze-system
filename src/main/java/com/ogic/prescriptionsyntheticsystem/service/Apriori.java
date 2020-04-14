@@ -31,6 +31,8 @@ public class Apriori {
 
     private Map<String, Double> fixableRuleMap;
 
+    private int believeDegreeMission = 0;
+
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public Apriori(List<Sample> sampleList, List<String> diagnosisList, List<String> drugList) {
@@ -69,6 +71,7 @@ public class Apriori {
             list.add(20000 + i);
             targetList.add(list);
         }
+        int targetSize = 1;
         while (!targetList.isEmpty()) {
             logger.info("this turn's target:" + targetList + "\n");
             for (List<Integer> target : targetList) {
@@ -79,13 +82,17 @@ public class Apriori {
                 }
             }
             targetList.clear();
+            targetSize++;
             for (int i = 0; i < fixableList.size(); i++){
-                for (int j = i; j < fixableList.size(); j++){
-                    List<Integer> temp = pair(fixableList.get(i), fixableList.get(j));
-                    if (temp != null){
-                        targetList.add(temp);
+                if (targetSize <= 5) {
+                    for (int j = i; j < fixableList.size(); j++) {
+                        List<Integer> temp = pair(fixableList.get(i), fixableList.get(j));
+                        if (temp != null) {
+                            targetList.add(temp);
+                        }
                     }
                 }
+                believeDegreeMission++;
                 believeDegreeAnalyze(fixableList.get(i));
             }
             fixableList.clear();
@@ -198,6 +205,9 @@ public class Apriori {
         }catch (Exception e){
             e.printStackTrace();
         }
+        finally {
+            believeDegreeMission--;
+        }
     }
 
     /**
@@ -285,6 +295,10 @@ public class Apriori {
             }
         }
         return result;
+    }
+
+    public boolean isBelieveDegreeFinished(){
+        return (believeDegreeMission == 0);
     }
 
 }
