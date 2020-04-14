@@ -1,7 +1,5 @@
 package com.ogic.prescriptionsyntheticsystem;
 
-import com.ogic.prescriptionsyntheticsystem.component.CheckImportTool;
-import com.ogic.prescriptionsyntheticsystem.component.ExcelImportTool;
 import com.ogic.prescriptionsyntheticsystem.component.SampleCleanTool;
 import com.ogic.prescriptionsyntheticsystem.component.SampleImportTool;
 import com.ogic.prescriptionsyntheticsystem.entity.Sample;
@@ -9,9 +7,9 @@ import com.ogic.prescriptionsyntheticsystem.service.Apriori;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.relational.core.sql.In;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.*;
 
@@ -64,15 +62,34 @@ class PrescriptionSyntheticSystemApplicationTests {
         SampleImportTool sampleImportTool = new SampleImportTool("/home/ogic/Desktop/data.xls");
         List<Sample> sampleList = sampleImportTool.readExcel(1);
         sampleCleanTool.clean(sampleList);
-        Apriori apriori = new Apriori(sampleList, sampleImportTool.getDiagnosisList(), sampleImportTool.getDrugList());
+        Apriori apriori = new Apriori(sampleList.subList(0, 400), sampleImportTool.getDiagnosisList(), sampleImportTool.getDrugList());
         apriori.run();
-        Map<String, Double> result = apriori.getResult();
-        Iterator<Map.Entry<String, Double>> iterator = result.entrySet().iterator();
+        Map<String, Double> supportDegreeResult = apriori.getSupportDegreeResult();
+        Iterator<Map.Entry<String, Double>> iterator = supportDegreeResult.entrySet().iterator();
         while (iterator.hasNext()){
             Map.Entry<String, Double> entry = iterator.next();
             double temp = entry.getValue();
             if (temp > apriori.MIN_SUPPORT_DEGREE) {
                 System.out.println(entry.getKey() + " = " + String.format("%.6f", temp));
+            }
+        }
+        Map<String, Double> believeDegreeResult = apriori.getBelieveDegreeResult();
+        iterator = believeDegreeResult.entrySet().iterator();
+        while (iterator.hasNext()){
+            Map.Entry<String, Double> entry = iterator.next();
+            double temp = entry.getValue();
+            if (temp > apriori.MIN_SUPPORT_DEGREE) {
+                System.out.println(entry.getKey() + " = " + String.format("%.6f", temp));
+            }
+        }
+        Map<String, Double> fixableRuleMap = apriori.getFixableRuleMap();
+        iterator = fixableRuleMap.entrySet().iterator();
+        while (iterator.hasNext()){
+            Map.Entry<String, Double> entry = iterator.next();
+            double temp = entry.getValue();
+            DecimalFormat format = new DecimalFormat("0.00%");
+            if (temp > apriori.MIN_SUPPORT_DEGREE) {
+                System.out.println(entry.getKey() + " = " + format.format(temp));
             }
         }
     }
