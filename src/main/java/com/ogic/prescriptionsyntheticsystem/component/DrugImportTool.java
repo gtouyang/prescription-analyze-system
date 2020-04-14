@@ -1,25 +1,30 @@
 package com.ogic.prescriptionsyntheticsystem.component;
 
+import com.ogic.prescriptionsyntheticsystem.entity.CheckTable;
 import com.ogic.prescriptionsyntheticsystem.entity.DrugTable;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author ogic
  */
-public class DrugImportTool extends ExcelImportTool{
+public class DrugImportTool extends AbstractExcelImportTool {
     public DrugImportTool(String fileName) throws IOException {
         super(fileName);
     }
 
+    private List<DrugTable> drugTableList;
+
     @Override
-    public List readExcel(int sheetId){
+    public void readExcel(int sheetId){
         Sheet sheet = workbook.getSheetAt(sheetId);
         int rowNum = sheet.getPhysicalNumberOfRows();
-        List<DrugTable> drugTableList = new ArrayList<>(rowNum-1);
+        drugTableList = new ArrayList<>(rowNum-1);
         for (int i = 1; i < rowNum; i++){
             Row row = sheet.getRow(i);
             DrugTable drugTable = new DrugTable();
@@ -46,6 +51,9 @@ public class DrugImportTool extends ExcelImportTool{
                 drugTableList.add(drugTable);
             }
         }
+    }
+
+    public List<DrugTable> getDrugTableList() {
         return drugTableList;
     }
 }

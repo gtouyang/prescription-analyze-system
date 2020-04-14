@@ -8,23 +8,25 @@ import org.apache.poi.ss.usermodel.Sheet;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author ogic
  */
-public class SampleImportTool extends ExcelImportTool {
+public class SampleImportTool extends AbstractExcelImportTool {
 
     public SampleImportTool(String fileName) throws IOException {
         super(fileName);
     }
 
+    private List<Sample> sampleList;
+
     @Override
-    public List readExcel(int sheetId) throws IOException, ParseException {
+    public void readExcel(int sheetId) throws IOException, ParseException {
         Sheet sheet = workbook.getSheetAt(sheetId);
         int rowNum = sheet.getPhysicalNumberOfRows();
-        List<Sample> sampleList = new ArrayList<>(rowNum - 1);
+        sampleList = new ArrayList<>(rowNum - 1);
         Sample thisSample = null;
         int id = 0;
         for (int i = 1; i < rowNum; i++) {
@@ -74,6 +76,9 @@ public class SampleImportTool extends ExcelImportTool {
             }
         }
         sampleList.add(thisSample);
+    }
+
+    public List<Sample> getSampleList() {
         return sampleList;
     }
 

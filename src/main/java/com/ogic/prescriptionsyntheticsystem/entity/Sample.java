@@ -23,6 +23,11 @@ public class Sample {
     private int patientId;
 
     /**
+     * 案例标识，用于区分是不是同一个案例，这里用的是就诊次数
+     */
+    private int flag;
+
+    /**
      * 诊断
      */
     private List<Integer> diagnosis;
@@ -64,6 +69,15 @@ public class Sample {
 
     public Sample setDiagnosis(List<Integer> diagnosis) {
         this.diagnosis = diagnosis;
+        return this;
+    }
+
+    public int getFlag() {
+        return flag;
+    }
+
+    public Sample setFlag(int flag) {
+        this.flag = flag;
         return this;
     }
 

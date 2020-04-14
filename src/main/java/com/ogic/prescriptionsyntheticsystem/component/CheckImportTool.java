@@ -2,7 +2,9 @@ package com.ogic.prescriptionsyntheticsystem.component;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.ogic.prescriptionsyntheticsystem.entity.CheckTable;
 import org.apache.poi.ss.usermodel.Row;
@@ -11,17 +13,19 @@ import org.apache.poi.ss.usermodel.Sheet;
 /**
  * @author ogic
  */
-public class CheckImportTool extends ExcelImportTool {
+public class CheckImportTool extends AbstractExcelImportTool {
 
     public CheckImportTool(String fileName) throws IOException {
         super(fileName);
     }
 
+    private List<CheckTable> checkTableList;
+
     @Override
-    public List readExcel(int sheetId){
+    public void readExcel(int sheetId){
         Sheet sheet = workbook.getSheetAt(sheetId);
         int rowNum = sheet.getPhysicalNumberOfRows();
-        List<CheckTable> checkTableList = new ArrayList<>(rowNum-1);
+        checkTableList = new ArrayList<>(rowNum-1);
         for (int i = 1; i < rowNum; i++){
             Row row = sheet.getRow(i);
             CheckTable checkTable = new CheckTable();
@@ -49,6 +53,9 @@ public class CheckImportTool extends ExcelImportTool {
                 checkTableList.add(checkTable);
             }
         }
+    }
+
+    public List<CheckTable> getCheckTableList() {
         return checkTableList;
     }
 }
