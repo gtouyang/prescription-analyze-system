@@ -32,7 +32,7 @@ public class SampleCleanTool {
 
         /*2. 对症状和用药列表进行排序*/
         for(int i = 0; i < data.size(); i++){
-            List<Integer> diagnosis = data.get(i).getDiagnosis();
+            List<Integer> diagnosis = data.get(i).getDiagnoses();
             diagnosis.sort(Comparator.comparingInt(o -> o));
             List<Integer> drugs = data.get(i).getDrugs();
             drugs.sort((Comparator.comparingInt(o -> o)));

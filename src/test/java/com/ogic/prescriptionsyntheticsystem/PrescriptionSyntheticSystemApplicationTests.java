@@ -51,7 +51,10 @@ class PrescriptionSyntheticSystemApplicationTests {
     @Test
     public void cleanTest() throws IOException, ParseException {
         SampleImportTool tool = new SampleImportTool("/home/ogic/Desktop/data.xls");
-        List<Sample> sampleList = tool.readExcel(1);
+        tool.readExcel(1);
+
+        List<Sample> sampleList = tool.getSampleList();
+
         sampleCleanTool.clean(sampleList);
         System.out.println(sampleList);
 //        System.out.println("sampleList size:"+sampleList.size());
@@ -62,7 +65,8 @@ class PrescriptionSyntheticSystemApplicationTests {
     @Test
     public void aprioriTest() throws IOException, ParseException, InterruptedException {
         SampleImportTool sampleImportTool = new SampleImportTool("/home/ogic/Desktop/data.xls");
-        List<Sample> sampleList = sampleImportTool.readExcel(1);
+        sampleImportTool.readExcel(1);
+        List<Sample> sampleList = sampleImportTool.getSampleList();
         sampleCleanTool.clean(sampleList);
         Apriori apriori = new Apriori(sampleList, sampleImportTool.getDiagnosisList(), sampleImportTool.getDrugList());
         apriori.run();

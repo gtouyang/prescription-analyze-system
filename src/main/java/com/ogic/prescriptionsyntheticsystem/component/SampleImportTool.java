@@ -1,6 +1,7 @@
 package com.ogic.prescriptionsyntheticsystem.component;
 
 import com.ogic.prescriptionsyntheticsystem.entity.DrugDetail;
+import com.ogic.prescriptionsyntheticsystem.entity.Patient;
 import com.ogic.prescriptionsyntheticsystem.entity.Sample;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -8,6 +9,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,67 +24,79 @@ public class SampleImportTool extends AbstractExcelImportTool {
 
     private List<Sample> sampleList;
 
+    private Map<Integer, Patient> patientMap;
+
     @Override
     public void readExcel(int sheetId) throws IOException, ParseException {
         Sheet sheet = workbook.getSheetAt(sheetId);
         int rowNum = sheet.getPhysicalNumberOfRows();
         sampleList = new ArrayList<>(rowNum - 1);
-        Sample thisSample = null;
-        int id = 0;
+        patientMap = new HashMap<>();
+        Sample thisSample;
+        Patient thisPatient;
         for (int i = 1; i < rowNum; i++) {
+
+            /*初始化*/
+            thisSample = null;
+            thisPatient = null;
+
             Row row = sheet.getRow(i);
 
-            /* 检查该行的患者ID和上一行的患者ID是否相同 */
+            /*获取该行患者ID*/
             int thisPatientId = (int) (3 * Double.parseDouble(row.getCell(0).toString()));
-            if (thisSample == null || thisPatientId != thisSample.getPatientId()) {
-                if (thisSample != null) {
-                    sampleList.add(thisSample);
+
+            /* 检查该患者是否曾经记录过 */
+            if (!patientMap.containsKey(thisPatientId)){
+                thisPatient = new Patient(thisPatientId);
+                patientMap.put(thisPatientId, thisPatient);
+            }else {
+                thisPatient = patientMap.get(thisPatientId);
+            }
+            int thisFlag = (int) Double.parseDouble(row.getCell(1).toString());
+
+            List<Sample> thisPatientSamples = thisPatient.getSamples();
+
+            if (thisPatientSamples.size() > 0){
+                for (Sample sample : thisPatientSamples){
+                    if (thisFlag == sample.getFlag()){
+                        thisSample = sample;
+                        break;
+                    }
                 }
-                /* 如果不同则创建一个新的sample */
-                thisSample = new Sample()
-                        .setId(id++)
-                        .setPatientId(thisPatientId)
-                        .setDiagnosis(new ArrayList<>())
-                        .setDrugs(new ArrayList<>())
-                        .setDrugDetails(new ArrayList<>());
+            }
+            if (thisSample == null){
+                thisSample = new Sample().setPatientId(thisPatientId).setFlag(thisFlag);
+                thisPatient.addSample(thisSample);
+                sampleList.add(thisSample);
             }
 
             for (int j = 2; j < 6; j++) {
                 String tempStr = row.getCell(j).toString();
                 if (tempStr != null && !tempStr.isEmpty() && !"NULL".equals(tempStr)) {
                     int tempDiagnosisId = countDiagnosis(tempStr);
-                    if (!thisSample.getDiagnosis().contains(tempDiagnosisId)) {
-                        thisSample.getDiagnosis().add(tempDiagnosisId);
-                    }
+                    thisSample.addDiagnosis(tempDiagnosisId);
                 }
             }
 
             String tempStr = row.getCell(9).toString();
             if (tempStr != null && !tempStr.isEmpty()) {
                 int tempDrugId = countDrug(tempStr);
-                if (!thisSample.getDrugs().contains(tempDrugId)) {
-                    thisSample.getDrugs().add(tempDrugId);
-                    DrugDetail newDrugDetail = new DrugDetail(
-                            tempDrugId,
-                            (int) Double.parseDouble(row.getCell(10).toString()),
-                            row.getCell(17).toString());
-                    thisSample.getDrugDetails().add(newDrugDetail);
-                } else {
-                    DrugDetail thisDrugDetail = thisSample.getDrugDetails().get(thisSample.getDrugs().indexOf(tempDrugId));
-                    if (thisDrugDetail.getDrugId() == tempDrugId) {
-                        thisDrugDetail.addAmount((int) Double.parseDouble(row.getCell(10).toString()));
-                    }
-                }
+                thisSample.addDrug(tempDrugId)
+                        .addDrugDetail(tempDrugId, (int) Double.parseDouble(row.getCell(10).toString()), row.getCell(17).toString());
+
             }
         }
-        sampleList.add(thisSample);
     }
 
     public List<Sample> getSampleList() {
         return sampleList;
     }
 
-    private List<String> diagnosisList = new ArrayList<String>();
+    public Map<Integer, Patient> getPatientMap() {
+        return patientMap;
+    }
+
+    private final List<String> diagnosisList = new ArrayList<String>();
 
     public List<String> getDiagnosisList(){
         return new ArrayList<>(diagnosisList);
@@ -98,7 +112,7 @@ public class SampleImportTool extends AbstractExcelImportTool {
         }
     }
 
-    private List<String> drugList = new ArrayList<String>();
+    private final List<String> drugList = new ArrayList<String>();
 
     public List<String> getDrugList(){
         return new ArrayList<>(drugList);

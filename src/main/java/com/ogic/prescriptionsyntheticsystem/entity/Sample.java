@@ -1,10 +1,10 @@
 package com.ogic.prescriptionsyntheticsystem.entity;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.Accessors;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 @Data
@@ -30,7 +30,7 @@ public class Sample {
     /**
      * 诊断
      */
-    private List<Integer> diagnosis;
+    private final List<Integer> diagnoses;
 
     /**
      * 用药
@@ -42,16 +42,17 @@ public class Sample {
      */
     private List<DrugDetail> drugDetails;
 
+    private static int ID_COUNT = 0;
+
     public Sample() {
+        id = ID_COUNT++;
+        diagnoses = new ArrayList<>(4);
+        drugs = new ArrayList<>(10);
+        drugDetails = new ArrayList<>(10);
     }
 
     public int getId() {
         return id;
-    }
-
-    public Sample setId(int id) {
-        this.id = id;
-        return this;
     }
 
     public int getPatientId() {
@@ -63,12 +64,15 @@ public class Sample {
         return this;
     }
 
-    public List<Integer> getDiagnosis() {
-        return diagnosis;
+    public List<Integer> getDiagnoses() {
+        return diagnoses;
     }
 
-    public Sample setDiagnosis(List<Integer> diagnosis) {
-        this.diagnosis = diagnosis;
+    public Sample addDiagnosis(int diagnosis){
+        if (!diagnoses.contains(diagnosis)){
+            diagnoses.add(diagnosis);
+            diagnoses.sort(Comparator.comparingInt(o -> o));
+        }
         return this;
     }
 
@@ -85,8 +89,11 @@ public class Sample {
         return drugs;
     }
 
-    public Sample setDrugs(List<Integer> drugs) {
-        this.drugs = drugs;
+    public Sample addDrug(int drug) {
+        if (!drugs.contains(drug)){
+            drugs.add(drug);
+            drugs.sort(Comparator.comparingInt(o -> o));
+        }
         return this;
     }
 
@@ -94,8 +101,14 @@ public class Sample {
         return drugDetails;
     }
 
-    public Sample setDrugDetails(List<DrugDetail> drugDetails) {
-        this.drugDetails = drugDetails;
+    public Sample addDrugDetail(int drugId, int amount, String unit) {
+        for (DrugDetail drugDetail:drugDetails){
+            if (drugDetail.getDrugId() == drugId){
+                drugDetail.addAmount(amount);
+                return this;
+            }
+        }
+        drugDetails.add(new DrugDetail(drugId, amount, unit));
         return this;
     }
 
@@ -104,7 +117,7 @@ public class Sample {
         return "\n\nSample{" +
                 "id=" + id +
                 ", \npatientId=" + patientId +
-                ", \ndiagnosis=" + Arrays.toString(diagnosis.toArray()) +
+                ", \ndiagnosis=" + Arrays.toString(diagnoses.toArray()) +
                 ", \ndrugs=" + Arrays.toString(drugs.toArray()) +
                 ", \ndrugDetails=" + Arrays.toString(drugDetails.toArray()) +
                 "}";

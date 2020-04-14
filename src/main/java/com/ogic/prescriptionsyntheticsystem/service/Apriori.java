@@ -13,9 +13,9 @@ import java.util.*;
  */
 public class Apriori {
 
-    public final double MIN_SUPPORT_DEGREE = 0.001;
+    public final double MIN_SUPPORT_DEGREE = 0.01;
 
-    public final double MIN_BELIEVE_DEGREE = 0.5;
+    public final double MIN_BELIEVE_DEGREE = 0.1;
 
     private final List<Sample> sampleList;
 
@@ -41,8 +41,8 @@ public class Apriori {
         this.drugList = drugList;
         data = new ArrayList<>(sampleList.size());
         for (int i = 0; i < sampleList.size(); i++){
-            List<Integer> temp = new ArrayList<>(sampleList.get(i).getDiagnosis().size() + sampleList.get(i).getDrugs().size());
-            temp.addAll(sampleList.get(i).getDiagnosis());
+            List<Integer> temp = new ArrayList<>(sampleList.get(i).getDiagnoses().size() + sampleList.get(i).getDrugs().size());
+            temp.addAll(sampleList.get(i).getDiagnoses());
             temp.addAll(sampleList.get(i).getDrugs());
             data.add(temp);
         }
@@ -197,8 +197,23 @@ public class Apriori {
                     String str = Arrays.toString(part.toArray()) + "->" + Arrays.toString(rest.toArray());
                     believeDegreeResult.put(str, tempBelieveDegree);
                     if (tempBelieveDegree >= MIN_BELIEVE_DEGREE){
-                        str = Arrays.toString(id2Name(part).toArray()) + "->" + Arrays.toString(id2Name(rest).toArray());
-                        fixableRuleMap.put(str, tempBelieveDegree);
+                        boolean flag = true;
+                        for (int temp : part){
+                            if (temp > 20000) {
+                                flag = false;
+                                break;
+                            }
+                        }
+                        for (int temp : rest){
+                            if (temp < 20000) {
+                                flag = false;
+                                break;
+                            }
+                        }
+                        if (flag) {
+                            str = Arrays.toString(id2Name(part).toArray()) + "->" + Arrays.toString(id2Name(rest).toArray());
+                            fixableRuleMap.put(str, tempBelieveDegree);
+                        }
                     }
                 }
             }

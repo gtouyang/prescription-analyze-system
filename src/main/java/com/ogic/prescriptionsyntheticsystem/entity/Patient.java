@@ -5,6 +5,9 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author ogic
+ */
 @Data
 public class Patient {
 
@@ -14,6 +17,7 @@ public class Patient {
 
     public Patient(int patientId) {
         this.patientId = patientId;
+        samples = new ArrayList<>();
     }
 
     public int getPatientId() {
