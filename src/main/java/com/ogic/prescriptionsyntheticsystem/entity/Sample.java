@@ -68,9 +68,14 @@ public class Sample {
         return diagnoses;
     }
 
-    public Sample addDiagnosis(int diagnosis){
-        if (!diagnoses.contains(diagnosis)){
-            diagnoses.add(diagnosis);
+    /**
+     * 给样本添加诊断，如果诊断已存在则跳过
+     * @param diagnosisId 诊断ID
+     * @return  该样本
+     */
+    public Sample addDiagnosis(int diagnosisId){
+        if (!diagnoses.contains(diagnosisId)){
+            diagnoses.add(diagnosisId);
             diagnoses.sort(Comparator.comparingInt(o -> o));
         }
         return this;
@@ -89,9 +94,14 @@ public class Sample {
         return drugs;
     }
 
-    public Sample addDrug(int drug) {
-        if (!drugs.contains(drug)){
-            drugs.add(drug);
+    /**
+     * 添加药物，如果药物已存在则跳过
+     * @param drugId    药物ID
+     * @return          该样本
+     */
+    public Sample addDrug(int drugId) {
+        if (!drugs.contains(drugId)){
+            drugs.add(drugId);
             drugs.sort(Comparator.comparingInt(o -> o));
         }
         return this;
@@ -101,6 +111,13 @@ public class Sample {
         return drugDetails;
     }
 
+    /**
+     * 添加药物详细信息，如果药物已存在则数量合并
+     * @param drugId    药物ID
+     * @param amount    数量
+     * @param unit      单位
+     * @return          该样本
+     */
     public Sample addDrugDetail(int drugId, int amount, String unit) {
         for (DrugDetail drugDetail:drugDetails){
             if (drugDetail.getDrugId() == drugId){

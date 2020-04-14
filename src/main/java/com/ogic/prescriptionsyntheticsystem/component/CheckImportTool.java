@@ -11,6 +11,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
 /**
+ * 检验表的Excel读取工具
  * @author ogic
  */
 public class CheckImportTool extends AbstractExcelImportTool {

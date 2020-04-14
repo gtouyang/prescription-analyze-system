@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * 样本读取工具
  * @author ogic
  */
 public class SampleImportTool extends AbstractExcelImportTool {
@@ -22,12 +23,28 @@ public class SampleImportTool extends AbstractExcelImportTool {
         super(fileName);
     }
 
+    /**
+     * 总样本列表
+     */
     private List<Sample> sampleList;
 
+    /**
+     * 患者表
+     */
     private Map<Integer, Patient> patientMap;
 
+    /**
+     * 诊断列表
+     */
+    private final List<String> diagnosisList = new ArrayList<String>();
+
+    /**
+     * 药物列表
+     */
+    private final List<String> drugList = new ArrayList<String>();
+
     @Override
-    public void readExcel(int sheetId) throws IOException, ParseException {
+    public void readExcel(int sheetId) {
         Sheet sheet = workbook.getSheetAt(sheetId);
         int rowNum = sheet.getPhysicalNumberOfRows();
         sampleList = new ArrayList<>(rowNum - 1);
@@ -47,15 +64,21 @@ public class SampleImportTool extends AbstractExcelImportTool {
 
             /* 检查该患者是否曾经记录过 */
             if (!patientMap.containsKey(thisPatientId)){
+                /*如果已经记录过该患者则提取他的信息*/
                 thisPatient = new Patient(thisPatientId);
                 patientMap.put(thisPatientId, thisPatient);
             }else {
+                /*如果没有则记录该新患者*/
                 thisPatient = patientMap.get(thisPatientId);
             }
+
+            /*读取就诊次数，作为分开同一个患者不同批次就诊的标识*/
             int thisFlag = (int) Double.parseDouble(row.getCell(1).toString());
 
+            /*获取该患者的样本列表*/
             List<Sample> thisPatientSamples = thisPatient.getSamples();
 
+            /*遍历该患者的样本列表，如果有相同标识的样本则说明是同一次就诊*/
             if (thisPatientSamples.size() > 0){
                 for (Sample sample : thisPatientSamples){
                     if (thisFlag == sample.getFlag()){
@@ -64,12 +87,15 @@ public class SampleImportTool extends AbstractExcelImportTool {
                     }
                 }
             }
+
+            /*如果没有相同标识的样本说明是一次新的就诊，则新建一个样本，加入到该患者的样本列表和总样本列表*/
             if (thisSample == null){
                 thisSample = new Sample().setPatientId(thisPatientId).setFlag(thisFlag);
                 thisPatient.addSample(thisSample);
                 sampleList.add(thisSample);
             }
 
+            /*读取该行数据的诊断，加入到样本中*/
             for (int j = 2; j < 6; j++) {
                 String tempStr = row.getCell(j).toString();
                 if (tempStr != null && !tempStr.isEmpty() && !"NULL".equals(tempStr)) {
@@ -78,6 +104,7 @@ public class SampleImportTool extends AbstractExcelImportTool {
                 }
             }
 
+            /*读取该行数据使用的药物，加入到样本中*/
             String tempStr = row.getCell(9).toString();
             if (tempStr != null && !tempStr.isEmpty()) {
                 int tempDrugId = countDrug(tempStr);
@@ -88,20 +115,35 @@ public class SampleImportTool extends AbstractExcelImportTool {
         }
     }
 
+    /**
+     * 获取总样本列表
+     * @return  总样本列表
+     */
     public List<Sample> getSampleList() {
         return sampleList;
     }
 
+    /**
+     * 获取患者表
+     * @return  患者表
+     */
     public Map<Integer, Patient> getPatientMap() {
         return patientMap;
     }
 
-    private final List<String> diagnosisList = new ArrayList<String>();
-
+    /**
+     * 获取诊断列表，用于根据诊断ID获取诊断名
+     * @return  诊断列表
+     */
     public List<String> getDiagnosisList(){
         return new ArrayList<>(diagnosisList);
     }
 
+    /**
+     * 根据诊断名返回诊断ID，为与其他ID区分开来该ID从10000数起
+     * @param diagnosis 诊断名
+     * @return  诊断ID
+     */
     private int countDiagnosis(String diagnosis) {
 
         if (diagnosisList.contains(diagnosis)) {
@@ -112,12 +154,19 @@ public class SampleImportTool extends AbstractExcelImportTool {
         }
     }
 
-    private final List<String> drugList = new ArrayList<String>();
-
+    /**
+     * 获取药物列表，用于根据药物ID获取药物名
+     * @return  药物列表
+     */
     public List<String> getDrugList(){
         return new ArrayList<>(drugList);
     }
 
+    /**
+     * 根据药物名返回药物ID，为与其他ID区分开来该ID从20000数起
+     * @param drug  药物名
+     * @return  药物ID
+     */
     private int countDrug(String drug) {
 
         if (drugList.contains(drug)) {

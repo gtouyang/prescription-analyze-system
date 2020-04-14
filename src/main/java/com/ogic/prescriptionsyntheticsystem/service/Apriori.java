@@ -13,24 +13,54 @@ import java.util.*;
  */
 public class Apriori {
 
+    /**
+     * 最小支持度(支持度阈值)
+     */
     public final double MIN_SUPPORT_DEGREE = 0.01;
 
+    /**
+     * 最小置信度(置信度阈值)
+     */
     public final double MIN_BELIEVE_DEGREE = 0.1;
 
+    /**
+     * 总样本列表
+     */
     private final List<Sample> sampleList;
 
+    /**
+     * 诊断列表
+     */
     private final List<String> diagnosisList;
 
+    /**
+     * 药物列表
+     */
     private final List<String> drugList;
 
+    /**
+     * 简化后的样本列表
+     */
     private final List<List<Integer>> data;
 
+    /**
+     * 支持度表
+     */
     private Map<String, Double> supportDegreeResult;
 
+    /**
+     * 置信度表
+     */
     private Map<String, Double> believeDegreeResult;
 
+    /**
+     * 符合要求的置信度表(将ID装换成原来的名字后)
+     */
     private Map<String, Double> fixableRuleMap;
 
+    /**
+     * 正在进行的置信度计算任务
+     */
     private int believeDegreeMission = 0;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -55,12 +85,16 @@ public class Apriori {
      * 运行Apriori算法，结果保存在supportDegreeResult和believeDegreeResult
      */
     public void run(){
+
+        /*初始化*/
         int kindNum = diagnosisList.size() + drugList.size();
         supportDegreeResult = new HashMap<>();
         believeDegreeResult = new HashMap<>();
         fixableRuleMap = new HashMap<>();
         List<List<Integer>> targetList = new ArrayList<>(kindNum);
         List<List<Integer>> fixableList = new ArrayList<>(kindNum);
+
+        /*将所有诊断和所有药物分别作为本次支持度计算的目标*/
         for (int i = 0; i < diagnosisList.size(); i++){
             List<Integer> list = new ArrayList<>(1);
             list.add(10000 + i);
@@ -72,17 +106,26 @@ public class Apriori {
             targetList.add(list);
         }
         int targetSize = 1;
+
         while (!targetList.isEmpty()) {
             logger.info("this turn's target:" + targetList + "\n");
             for (List<Integer> target : targetList) {
                 double temp = supportDegree(target);
                 supportDegreeResult.put(Arrays.toString(target.toArray()), temp);
+
+                /*如果支持度大于支持度阈值则加入频繁集列表*/
                 if (temp > MIN_SUPPORT_DEGREE) {
                     fixableList.add(target);
                 }
             }
+
+            /*清除目标列表，重新生成下次循环的目标列表*/
             targetList.clear();
+
+            /*下次循环的目标集合的长度*/
             targetSize++;
+
+            /*通过本次循环的频繁集列表生成下次循环的目标列表*/
             for (int i = 0; i < fixableList.size(); i++){
                 if (targetSize <= 5) {
                     for (int j = i; j < fixableList.size(); j++) {
@@ -95,6 +138,8 @@ public class Apriori {
                 believeDegreeMission++;
                 believeDegreeAnalyze(fixableList.get(i));
             }
+
+            /*清除频繁集列表*/
             fixableList.clear();
         }
 
@@ -181,10 +226,6 @@ public class Apriori {
             for (int i = 1; i < list.size(); i++) {
                 /*获得长度为i的所有子集*/
                 List<List<Integer>> partList = getPartList(list, i);
-
-                if (partList == null){
-                    partList = null;
-                }
 
                 for (List<Integer> part : partList) {
                     double tempBelieveDegree = believeDegree(list, part);
@@ -300,6 +341,11 @@ public class Apriori {
         return null;
     }
 
+    /**
+     * 将诊断ID或药物ID转换成诊断名或药物名
+     * @param idList    ID列表
+     * @return  名字列表
+     */
     private List<String> id2Name(List<Integer> idList){
         List<String> result = new ArrayList<>(idList.size());
         for (int i : idList){
@@ -312,6 +358,10 @@ public class Apriori {
         return result;
     }
 
+    /**
+     * 判断置信度是否计算完毕
+     * @return  置信度是否计算完毕
+     */
     public boolean isBelieveDegreeFinished(){
         return (believeDegreeMission == 0);
     }

@@ -11,9 +11,15 @@ import java.util.List;
 @Data
 public class Patient {
 
+    /**
+     * 患者ID
+     */
     private int patientId;
 
-    private List<Sample> samples;
+    /**
+     * 该患者下的样本
+     */
+    private final List<Sample> samples;
 
     public Patient(int patientId) {
         this.patientId = patientId;
@@ -34,9 +40,6 @@ public class Patient {
     }
 
     public Patient addSample(Sample sample) {
-        if (samples == null){
-            samples = new ArrayList<>();
-        }
         samples.add(sample);
         return this;
     }

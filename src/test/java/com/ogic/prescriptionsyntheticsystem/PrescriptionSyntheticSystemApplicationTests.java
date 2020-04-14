@@ -7,6 +7,7 @@ import com.ogic.prescriptionsyntheticsystem.service.Apriori;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 import java.io.IOException;
@@ -115,4 +116,5 @@ class PrescriptionSyntheticSystemApplicationTests {
         list.sort(Comparator.comparingInt(o -> o));
         System.out.println(Arrays.toString(list.toArray()));
     }
+
 }
