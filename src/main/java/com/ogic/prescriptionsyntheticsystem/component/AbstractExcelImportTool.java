@@ -1,5 +1,6 @@
 package com.ogic.prescriptionsyntheticsystem.component;
 
+import com.ogic.prescriptionsyntheticsystem.exception.UnitUnfixedException;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.stereotype.Component;
 
@@ -30,5 +31,5 @@ public abstract class AbstractExcelImportTool {
      * 读取文件流中指定sheet的表格
      * @param sheetId 表页
      */
-    public abstract void readExcel(int sheetId) throws IOException, ParseException;
+    public abstract void readExcel(int sheetId) throws IOException, ParseException, UnitUnfixedException;
 }

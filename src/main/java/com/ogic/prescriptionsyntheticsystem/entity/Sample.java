@@ -97,14 +97,15 @@ public class Sample {
     /**
      * 添加药物，如果药物已存在则跳过
      * @param drugId    药物ID
-     * @return          该样本
+     * @return          样本中是否已经含有该药物
      */
-    public Sample addDrug(int drugId) {
+    public boolean addDrug(int drugId) {
         if (!drugs.contains(drugId)){
             drugs.add(drugId);
             drugs.sort(Comparator.comparingInt(o -> o));
+            return false;
         }
-        return this;
+        return true;
     }
 
     public List<DrugDetail> getDrugDetails() {
@@ -113,20 +114,18 @@ public class Sample {
 
     /**
      * 添加药物详细信息，如果药物已存在则数量合并
-     * @param drugId    药物ID
-     * @param amount    数量
-     * @param unit      单位
-     * @return          该样本
+     * @param newOne    新药物
+     * @return          样本中是否已经含有该药物
      */
-    public Sample addDrugDetail(int drugId, int amount, String unit) {
+    public boolean addDrugDetail(DrugDetail newOne) {
         for (DrugDetail drugDetail:drugDetails){
-            if (drugDetail.getDrugId() == drugId){
-                drugDetail.addAmount(amount);
-                return this;
+            if (drugDetail.getDrugId() == newOne.getDrugId() && drugDetail.getUnit().equals(newOne.getUnit())){
+                drugDetail.addAmount(newOne.getAmount());
+                return true;
             }
         }
-        drugDetails.add(new DrugDetail(drugId, amount, unit));
-        return this;
+        drugDetails.add(newOne);
+        return false;
     }
 
     @Override

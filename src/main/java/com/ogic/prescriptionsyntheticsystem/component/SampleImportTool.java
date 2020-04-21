@@ -3,6 +3,7 @@ package com.ogic.prescriptionsyntheticsystem.component;
 import com.ogic.prescriptionsyntheticsystem.entity.DrugDetail;
 import com.ogic.prescriptionsyntheticsystem.entity.Patient;
 import com.ogic.prescriptionsyntheticsystem.entity.Sample;
+import com.ogic.prescriptionsyntheticsystem.exception.UnitUnfixedException;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
@@ -44,7 +45,7 @@ public class SampleImportTool extends AbstractExcelImportTool {
     private final List<String> drugList = new ArrayList<String>();
 
     @Override
-    public void readExcel(int sheetId) {
+    public void readExcel(int sheetId) throws UnitUnfixedException {
         Sheet sheet = workbook.getSheetAt(sheetId);
         int rowNum = sheet.getPhysicalNumberOfRows();
         sampleList = new ArrayList<>(rowNum - 1);
@@ -108,8 +109,11 @@ public class SampleImportTool extends AbstractExcelImportTool {
             String tempStr = row.getCell(9).toString();
             if (tempStr != null && !tempStr.isEmpty()) {
                 int tempDrugId = countDrug(tempStr);
-                thisSample.addDrug(tempDrugId)
-                        .addDrugDetail(tempDrugId, (int) Double.parseDouble(row.getCell(10).toString()), row.getCell(17).toString());
+                DrugDetail tempDrugDetail = new DrugDetail(tempDrugId, (int) Double.parseDouble(row.getCell(10).toString()), row.getCell(17).toString());
+                unifiedUnit(tempDrugDetail);
+                if (thisSample.addDrug(tempDrugId) != thisSample.addDrugDetail(tempDrugDetail)){
+                    throw new UnitUnfixedException(thisSample,tempDrugDetail);
+                }
 
             }
         }
@@ -175,5 +179,75 @@ public class SampleImportTool extends AbstractExcelImportTool {
             drugList.add(drug);
             return drugList.size() - 1 + 20000;
         }
+    }
+
+    private void unifiedUnit(DrugDetail drugDetail){
+
+        String unit = drugDetail.getUnit();
+
+        if (unit != null) {
+            /* 修改不规范的单位 */
+            if ("1g".equals(unit)) {
+                drugDetail.setUnit("g");
+            } else if ("/g".equals(unit)) {
+                drugDetail.setUnit("g");
+            } else if ("/支".equals(unit)) {
+                drugDetail.setUnit("支");
+            } else if ("4NU单位 30片/盒".equals(unit)) {
+                drugDetail.setUnit("30片/盒");
+            }
+
+            /* 将瓶、盒、版等单位换算成片、丸等 */
+            boolean flag = false;
+            if (!flag) {
+                flag = unifiedUnitHelper(drugDetail, "片");
+            }
+            if (!flag) {
+                flag = unifiedUnitHelper(drugDetail, "丸");
+            }
+            if (!flag) {
+                flag = unifiedUnitHelper(drugDetail, "支");
+            }
+            if (!flag){
+                flag = unifiedUnitHelper(drugDetail, "粒");
+            }
+            if (!flag) {
+                flag = unifiedUnitHelper(drugDetail, "袋");
+            }
+
+        }
+    }
+
+    private boolean unifiedUnitHelper(DrugDetail drugDetail, String param){
+        int multiple = 1;
+        String unit = drugDetail.getUnit();
+        if (unit.contains(param)) {
+            try {
+
+                if (unit.contains("×")) {
+                    multiple = Integer.parseInt(unit.substring(unit.indexOf("×") + 1, unit.indexOf(param)));
+                } else if (unit.contains("x")) {
+                    if ("2片 x5袋/盒".equals(unit)){
+                        multiple = 10;
+                    }else {
+                        multiple = Integer.parseInt(unit.substring(unit.indexOf("x") + 1, unit.indexOf(param)));
+                    }
+                } else if (unit.contains("*")) {
+                    multiple = Integer.parseInt(unit.substring(unit.indexOf("*") + 1, unit.indexOf(param)));
+                } else if (unit.indexOf(param) > 0) {
+                    try {
+                        multiple = Integer.parseInt(unit.substring(0, unit.indexOf(param)));
+                    } catch (NumberFormatException ignored) {
+                    }
+                }
+            }catch (StringIndexOutOfBoundsException e){
+                System.out.println(unit);
+                e.printStackTrace();
+            }
+            drugDetail.setUnit(param);
+            drugDetail.addAmount(drugDetail.getAmount() * (multiple - 1));
+            return true;
+        }
+        return false;
     }
 }

@@ -17,12 +17,12 @@ create table `DMCheck`(
     `resultUnit`        varchar(100)    default null comment '结果值单位',
     primary key (`id`),
     key (`patientId`)
-)charset = utf8mb4
+)charset = utf8
 engine = InnoDB comment '糖尿病检验单';
 
 -- 创建糖尿病用药单
 create table `DMDrug`(
-    `id`                int             unsigned not null auto_increment comment '检验单ID',
+    `id`                int             unsigned not null auto_increment comment '用药单ID',
     `patientId`         int             unsigned not null comment '病人编号',
     `visits`            int             unsigned not null comment '就诊次数',
     `mainDiagnosis`     varchar(100)    default null comment '主要诊断',
@@ -39,7 +39,7 @@ create table `DMDrug`(
     `frequency`         varchar(100)    not null comment '频率',
     primary key (`id`),
     key (`patientId`)
-)charset = utf8mb4
+)charset = utf8
 engine = InnoDB comment '糖尿病用药单';
 
 -- 创建贫血检验单表
@@ -61,12 +61,12 @@ create table `AnemiaCheck`(
     `resultUnit`        varchar(100)    default null comment '结果值单位',
     primary key (`id`),
     key (`patientId`)
-)charset = utf8mb4
+)charset = utf8
  engine = InnoDB comment '贫血检验单';
 
 -- 创建糖尿病用药单
 create table `AnemiaDrug`(
-    `id`                int             unsigned not null auto_increment comment '检验单ID',
+    `id`                int             unsigned not null auto_increment comment '用药单ID',
     `patientId`         int             unsigned not null comment '病人编号',
     `visits`            int             unsigned not null comment '就诊次数',
     `mainDiagnosis`     varchar(100)    default null comment '主要诊断',
@@ -83,5 +83,5 @@ create table `AnemiaDrug`(
     `frequency`         varchar(100)    not null comment '频率',
     primary key (`id`),
     key (`patientId`)
-)charset = utf8mb4
+)charset = utf8
  engine = InnoDB comment '贫血用药单';

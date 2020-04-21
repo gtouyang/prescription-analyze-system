@@ -16,12 +16,12 @@ public class Apriori {
     /**
      * 最小支持度(支持度阈值)
      */
-    public final double MIN_SUPPORT_DEGREE = 0.01;
+    public final double MIN_SUPPORT_DEGREE = 0.005;
 
     /**
      * 最小置信度(置信度阈值)
      */
-    public final double MIN_BELIEVE_DEGREE = 0.1;
+    public final double MIN_BELIEVE_DEGREE = 0.75;
 
     /**
      * 总样本列表
@@ -239,18 +239,18 @@ public class Apriori {
                     believeDegreeResult.put(str, tempBelieveDegree);
                     if (tempBelieveDegree >= MIN_BELIEVE_DEGREE){
                         boolean flag = true;
-                        for (int temp : part){
-                            if (temp > 20000) {
-                                flag = false;
-                                break;
-                            }
-                        }
-                        for (int temp : rest){
-                            if (temp < 20000) {
-                                flag = false;
-                                break;
-                            }
-                        }
+//                        for (int temp : part){
+//                            if (temp < 20000) {
+//                                flag = false;
+//                                break;
+//                            }
+//                        }
+//                        for (int temp : rest){
+//                            if (temp > 20000) {
+//                                flag = false;
+//                                break;
+//                            }
+//                        }
                         if (flag) {
                             str = Arrays.toString(id2Name(part).toArray()) + "->" + Arrays.toString(id2Name(rest).toArray());
                             fixableRuleMap.put(str, tempBelieveDegree);
