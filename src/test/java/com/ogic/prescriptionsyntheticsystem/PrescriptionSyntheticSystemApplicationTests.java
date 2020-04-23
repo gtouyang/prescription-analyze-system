@@ -4,10 +4,12 @@ import com.ogic.prescriptionsyntheticsystem.component.CheckImportTool;
 import com.ogic.prescriptionsyntheticsystem.component.DrugImportTool;
 import com.ogic.prescriptionsyntheticsystem.component.SampleCleanTool;
 import com.ogic.prescriptionsyntheticsystem.component.SampleImportTool;
+import com.ogic.prescriptionsyntheticsystem.entity.AprioriRuleWithBelieveDegree;
 import com.ogic.prescriptionsyntheticsystem.entity.CheckTable;
 import com.ogic.prescriptionsyntheticsystem.entity.DrugTable;
 import com.ogic.prescriptionsyntheticsystem.entity.Sample;
 import com.ogic.prescriptionsyntheticsystem.exception.UnitUnfixedException;
+import com.ogic.prescriptionsyntheticsystem.mapper.AprioriRuleWithBelieveDegreeMapper;
 import com.ogic.prescriptionsyntheticsystem.mapper.DMCheckMapper;
 import com.ogic.prescriptionsyntheticsystem.mapper.DMDrugMapper;
 import com.ogic.prescriptionsyntheticsystem.service.Apriori;
@@ -50,26 +52,9 @@ class PrescriptionSyntheticSystemApplicationTests {
 
     }
 
-    @Autowired
-    SampleCleanTool sampleCleanTool;
 
-    @Test
-    public void cleanTest() throws IOException, ParseException {
-        SampleImportTool tool = new SampleImportTool("/home/ogic/Desktop/data.xls");
-        try {
-            tool.readExcel(1);
-        }catch (UnitUnfixedException e){
-            System.out.println(e.getUnitError());
-            e.printStackTrace();
-        }
-        List<Sample> sampleList = tool.getSampleList();
-
-        sampleCleanTool.clean(sampleList);
-        System.out.println(sampleList);
-//        System.out.println("sampleList size:"+sampleList.size());
-//        System.out.println(tool.printDiagnosisList());
-//        System.out.println(tool.printDrugList());
-    }
+    @Resource
+    private AprioriRuleWithBelieveDegreeMapper aprioriRuleWithBelieveDegreeMapper;
 
     @Test
     public void aprioriTest() throws IOException, InterruptedException {
@@ -81,40 +66,32 @@ class PrescriptionSyntheticSystemApplicationTests {
             e.printStackTrace();
         }
         List<Sample> sampleList = sampleImportTool.getSampleList();
+        SampleCleanTool sampleCleanTool = new SampleCleanTool();
         sampleCleanTool.clean(sampleList);
         Apriori apriori = new Apriori(sampleList, sampleImportTool.getDiagnosisList(), sampleImportTool.getDrugList());
         apriori.run();
-        Map<String, Double> supportDegreeResult = apriori.getSupportDegreeResult();
-        Iterator<Map.Entry<String, Double>> iterator = supportDegreeResult.entrySet().iterator();
-        while (iterator.hasNext()){
-            Map.Entry<String, Double> entry = iterator.next();
-            double temp = entry.getValue();
-            if (temp > apriori.MIN_SUPPORT_DEGREE) {
-                System.out.println(entry.getKey() + " = " + String.format("%.6f", temp));
-            }
-        }
+//        Map<String, Double> supportDegreeResult = apriori.getSupportDegreeResult();
+//        Iterator<Map.Entry<String, Double>> iterator = supportDegreeResult.entrySet().iterator();
+//        while (iterator.hasNext()){
+//            Map.Entry<String, Double> entry = iterator.next();
+//            double temp = entry.getValue();
+//            if (temp > apriori.MIN_SUPPORT_DEGREE) {
+//                System.out.println(entry.getKey() + " = " + String.format("%.6f", temp));
+//            }
+//        }
         Map<String, Double> believeDegreeResult = apriori.getBelieveDegreeResult();
-        iterator = believeDegreeResult.entrySet().iterator();
+        List<AprioriRuleWithBelieveDegree> list = new ArrayList<>(believeDegreeResult.size());
+        Iterator iterator = believeDegreeResult.entrySet().iterator();
         while (iterator.hasNext()){
-            Map.Entry<String, Double> entry = iterator.next();
+            Map.Entry<String, Double> entry = (Map.Entry<String, Double>) iterator.next();
             double temp = entry.getValue();
             if (temp > apriori.MIN_SUPPORT_DEGREE) {
                 System.out.println(entry.getKey() + " = " + String.format("%.6f", temp));
             }
+            list.add(new AprioriRuleWithBelieveDegree(entry.getKey(), entry.getValue()));
+
         }
-        while (!apriori.isBelieveDegreeFinished()){
-            wait(1000l);
-        }
-        Map<String, Double> fixableRuleMap = apriori.getFixableRuleMap();
-        iterator = fixableRuleMap.entrySet().iterator();
-        while (iterator.hasNext()){
-            Map.Entry<String, Double> entry = iterator.next();
-            double temp = entry.getValue();
-            DecimalFormat format = new DecimalFormat("0.00%");
-            if (temp > apriori.MIN_SUPPORT_DEGREE) {
-                System.out.println(entry.getKey() + " = " + format.format(temp));
-            }
-        }
+        aprioriRuleWithBelieveDegreeMapper.insertAprioriRuleWithBelieveDegreeList(list);
     }
 
     @Test
@@ -127,6 +104,7 @@ class PrescriptionSyntheticSystemApplicationTests {
             e.printStackTrace();
         }
         List<Sample> sampleList = sampleImportTool.getSampleList();
+        SampleCleanTool sampleCleanTool = new SampleCleanTool();
         sampleCleanTool.clean(sampleList);
 //        System.out.println("sample size = " + sampleList.size());
 //        System.out.println("diagnosis size = " + sampleImportTool.getDiagnosisList().size());
@@ -135,13 +113,16 @@ class PrescriptionSyntheticSystemApplicationTests {
 //        Random random = new Random();
 //        List<Integer> randomDiagnosis = sampleList.get(random.nextInt(sampleList.size())).getDiagnoses();
 //        List<Sample> samples = kmeans.getSampleListByDiagnosis(randomDiagnosis);
-        Map<String, List<Sample>>  diagnosisDrugSampleMap= kmeans.getMaxDiagnosisDrugSampleMap();
-        System.out.println("诊断ID\t" + kmeans.getMaxSamplesDiagnoses());
-        List<String> randomDiagnosisName = new ArrayList<>( kmeans.getMaxSamplesDiagnoses().size());
-        for (int i :  kmeans.getMaxSamplesDiagnoses()){
-            randomDiagnosisName.add(sampleImportTool.getDiagnosisList().get(i - 10000));
+        List<Integer> diagnosis = new ArrayList<>(2);
+        diagnosis.add(10000);
+        diagnosis.add(10009);
+        Map<String, List<Sample>>  diagnosisDrugSampleMap= kmeans.getDiagnosisDrugSampleMapByDiagnosis(diagnosis);
+        System.out.println("诊断ID\t" + diagnosis);
+        List<String> diagnosisNames = new ArrayList<>(diagnosis.size());
+        for (int i :  diagnosis){
+            diagnosisNames.add(sampleImportTool.getDiagnosisList().get(i - 10000));
         }
-        System.out.println("诊断名:\t" + randomDiagnosisName);
+        System.out.println("诊断名:\t" + diagnosisNames);
         Iterator iterator = diagnosisDrugSampleMap.entrySet().iterator();
         while(iterator.hasNext()){
             Map.Entry entry = (Map.Entry) iterator.next();
@@ -190,13 +171,16 @@ class PrescriptionSyntheticSystemApplicationTests {
             e.printStackTrace();
         }
         List<Sample> sampleList = sampleImportTool.getSampleList();
+        SampleCleanTool sampleCleanTool = new SampleCleanTool();
         sampleCleanTool.clean(sampleList);
         Kmeans kmeans = new Kmeans(sampleList);
-        List<Integer> diagnosis = new ArrayList<>(1);
+        List<Integer> diagnosis = new ArrayList<>(2);
         diagnosis.add(10000);
+        diagnosis.add(10009);
         List<Integer> drug = new ArrayList<>(1);
-        drug.add(20001);
-        List<List<Sample>> result = kmeans.analyzeDiagnosisDrugByK(diagnosis, drug, 5);
+        drug.add(20049);
+        kmeans.getDiagnosisDrugSampleMapByDiagnosis(diagnosis);
+        List<List<Sample>> result = kmeans.analyzeDiagnosisDrugByK(diagnosis, drug, 3);
         for (int i = 0; i < result.size(); i++){
             System.out.println("Group\t" + i + "\t:");
             for (int j = 0; j < result.get(i).size(); j++){
@@ -218,6 +202,14 @@ class PrescriptionSyntheticSystemApplicationTests {
         list.add(5);
         list.sort(Comparator.comparingInt(o -> o));
         System.out.println(Arrays.toString(list.toArray()));
+    }
+
+    @Test
+    public void aprioriReadText(){
+        List<AprioriRuleWithBelieveDegree> aprioriRuleWithBelieveDegrees = aprioriRuleWithBelieveDegreeMapper.getAllAprioriRuleWithBelieveDegreeList();
+        for (AprioriRuleWithBelieveDegree aprioriRuleWithBelieveDegree : aprioriRuleWithBelieveDegrees){
+            System.out.println(aprioriRuleWithBelieveDegree);
+        }
     }
 
 }

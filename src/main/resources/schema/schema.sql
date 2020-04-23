@@ -64,7 +64,7 @@ create table `AnemiaCheck`(
 )charset = utf8
  engine = InnoDB comment '贫血检验单';
 
--- 创建糖尿病用药单
+-- 创建贫血用药单
 create table `AnemiaDrug`(
     `id`                int             unsigned not null auto_increment comment '用药单ID',
     `patientId`         int             unsigned not null comment '病人编号',
@@ -85,3 +85,11 @@ create table `AnemiaDrug`(
     key (`patientId`)
 )charset = utf8
  engine = InnoDB comment '贫血用药单';
+
+-- 创建
+create table `AprioriRuleWithBelieveDegree`(
+    `rule`              varchar(100)    not null comment '关联规则',
+    `believeDegree`     double          not null comment '置信度',
+     primary key (`rule`)
+)charset = utf8
+ engine = InnoDB comment 'Apriori置信度表';

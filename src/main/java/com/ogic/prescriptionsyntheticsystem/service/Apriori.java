@@ -21,7 +21,7 @@ public class Apriori {
     /**
      * 最小置信度(置信度阈值)
      */
-    public final double MIN_BELIEVE_DEGREE = 0.75;
+    public final double MIN_BELIEVE_DEGREE = 0.25;
 
     /**
      * 总样本列表
@@ -54,9 +54,14 @@ public class Apriori {
     private Map<String, Double> believeDegreeResult;
 
     /**
-     * 符合要求的置信度表(将ID装换成原来的名字后)
+     * 符合诊断=>药物的关联规则表
      */
-    private Map<String, Double> fixableRuleMap;
+    private Map<String, Double> diagnosis2DrugRuleMap;
+
+    /**
+     * 符合药物=>诊断的关联规则表
+     */
+    private Map<String, Double> drug2DiagnosisRuleMap;
 
     /**
      * 正在进行的置信度计算任务
@@ -90,7 +95,8 @@ public class Apriori {
         int kindNum = diagnosisList.size() + drugList.size();
         supportDegreeResult = new HashMap<>();
         believeDegreeResult = new HashMap<>();
-        fixableRuleMap = new HashMap<>();
+        diagnosis2DrugRuleMap = new HashMap<>();
+        drug2DiagnosisRuleMap = new HashMap<>();
         List<List<Integer>> targetList = new ArrayList<>(kindNum);
         List<List<Integer>> fixableList = new ArrayList<>(kindNum);
 
@@ -108,7 +114,7 @@ public class Apriori {
         int targetSize = 1;
 
         while (!targetList.isEmpty()) {
-            logger.info("this turn's target:" + targetList + "\n");
+            logger.info("this turn's target size:" + targetList.size() + "\n");
             for (List<Integer> target : targetList) {
                 double temp = supportDegree(target);
                 supportDegreeResult.put(Arrays.toString(target.toArray()), temp);
@@ -127,16 +133,18 @@ public class Apriori {
 
             /*通过本次循环的频繁集列表生成下次循环的目标列表*/
             for (int i = 0; i < fixableList.size(); i++){
-                if (targetSize <= 5) {
-                    for (int j = i; j < fixableList.size(); j++) {
+                for (int j = i; j < fixableList.size(); j++) {
+                    if(targetSize < 6) {
                         List<Integer> temp = pair(fixableList.get(i), fixableList.get(j));
                         if (temp != null) {
                             targetList.add(temp);
                         }
                     }
                 }
-                believeDegreeMission++;
-                believeDegreeAnalyze(fixableList.get(i));
+                if (targetSize > 1) {
+                    believeDegreeMission++;
+                    believeDegreeAnalyze(fixableList.get(i));
+                }
             }
 
             /*清除频繁集列表*/
@@ -162,11 +170,19 @@ public class Apriori {
     }
 
     /**
-     * 获得可靠的关联规则表
-     * @return
+     * 获得诊断=>药物的关联规则表
+     * @return 关联规则表
      */
-    public Map<String, Double> getFixableRuleMap() {
-        return fixableRuleMap;
+    public Map<String, Double> getDiagnosis2DrugRuleMap() {
+        return diagnosis2DrugRuleMap;
+    }
+
+    /**
+     * 获得药物=>诊断的关联规则表
+     * @return 关联规则表
+     */
+    public Map<String, Double> getDrug2DiagnosisRuleMap() {
+        return drug2DiagnosisRuleMap;
     }
 
     /**
@@ -220,7 +236,7 @@ public class Apriori {
      * 分析该集合的所有子集的置信度，结果加入believeDegreeResult
      * @param list  集合
      */
-    @Async
+//    @Async
     void believeDegreeAnalyze(List<Integer> list){
         try {
             for (int i = 1; i < list.size(); i++) {
@@ -235,25 +251,37 @@ public class Apriori {
                             rest.add(j);
                         }
                     }
-                    String str = Arrays.toString(part.toArray()) + "->" + Arrays.toString(rest.toArray());
+                    String str = Arrays.toString(part.toArray()) + "=>" + Arrays.toString(rest.toArray());
                     believeDegreeResult.put(str, tempBelieveDegree);
                     if (tempBelieveDegree >= MIN_BELIEVE_DEGREE){
-                        boolean flag = true;
-//                        for (int temp : part){
-//                            if (temp < 20000) {
-//                                flag = false;
-//                                break;
-//                            }
-//                        }
-//                        for (int temp : rest){
-//                            if (temp > 20000) {
-//                                flag = false;
-//                                break;
-//                            }
-//                        }
-                        if (flag) {
-                            str = Arrays.toString(id2Name(part).toArray()) + "->" + Arrays.toString(id2Name(rest).toArray());
-                            fixableRuleMap.put(str, tempBelieveDegree);
+                        boolean isDiagnosis2Drug = true;
+                        boolean isDrug2Diagnosis = true;
+
+                        for (int temp : part){
+                            if (temp >= 20000) {
+                                isDiagnosis2Drug = false;
+                                break;
+                            } else {
+                                isDrug2Diagnosis = false;
+                                break;
+                            }
+                        }
+                        for (int temp : rest){
+                            if (temp < 20000) {
+                                isDiagnosis2Drug = false;
+                                break;
+                            }else {
+                                isDrug2Diagnosis = false;
+                                break;
+                            }
+                        }
+                        if (isDiagnosis2Drug) {
+                            str = Arrays.toString(part.toArray()) + "=>" + Arrays.toString(rest.toArray());
+                            diagnosis2DrugRuleMap.put(str, tempBelieveDegree);
+                        }
+                        if (isDrug2Diagnosis) {
+                            str = Arrays.toString(part.toArray()) + "=>" + Arrays.toString(rest.toArray());
+                            drug2DiagnosisRuleMap.put(str, tempBelieveDegree);
                         }
                     }
                 }
