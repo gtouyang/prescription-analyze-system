@@ -37,7 +37,7 @@ class PrescriptionSyntheticSystemApplicationTests {
     DMDrugMapper dmDrugMapper;
 
     @Test
-    void mysqlTest() throws IOException, ParseException {
+    void mysqlTest() throws IOException {
 
         CheckImportTool checkImportTool = new CheckImportTool("/home/ogic/Desktop/data.xls");
         checkImportTool.readExcel(0);
@@ -58,7 +58,7 @@ class PrescriptionSyntheticSystemApplicationTests {
     private AprioriRuleWithBelieveDegreeMapper aprioriRuleWithBelieveDegreeMapper;
 
     @Test
-    public void aprioriTest() throws IOException, InterruptedException {
+    public void aprioriTest() throws IOException {
         SampleImportTool sampleImportTool = new SampleImportTool("/home/ogic/Desktop/data.xls");
         try {
             sampleImportTool.readExcel(1);
@@ -82,9 +82,7 @@ class PrescriptionSyntheticSystemApplicationTests {
 //        }
         Map<String, Double> believeDegreeResult = apriori.getBelieveDegreeResult();
         List<AprioriRuleWithBelieveDegree> list = new ArrayList<>(believeDegreeResult.size());
-        Iterator iterator = believeDegreeResult.entrySet().iterator();
-        while (iterator.hasNext()){
-            Map.Entry<String, Double> entry = (Map.Entry<String, Double>) iterator.next();
+        for (Map.Entry<String, Double> entry : believeDegreeResult.entrySet()) {
             double temp = entry.getValue();
             if (temp > apriori.MIN_SUPPORT_DEGREE) {
                 System.out.println(entry.getKey() + " = " + String.format("%.6f", temp));
@@ -124,20 +122,18 @@ class PrescriptionSyntheticSystemApplicationTests {
             diagnosisNames.add(sampleImportTool.getDiagnosisList().get(i - 10000));
         }
         System.out.println("诊断名:\t" + diagnosisNames);
-        Iterator iterator = diagnosisDrugSampleMap.entrySet().iterator();
-        while(iterator.hasNext()){
-            Map.Entry entry = (Map.Entry) iterator.next();
-            String drugIdStr = (String) entry.getKey();
-            List<Sample> samples = (List<Sample>) entry.getValue();
+        for (Map.Entry<String, List<Sample>> stringListEntry : diagnosisDrugSampleMap.entrySet()) {
+            String drugIdStr = (String) ((Map.Entry) stringListEntry).getKey();
+            List<Sample> samples = (List<Sample>) ((Map.Entry) stringListEntry).getValue();
             System.out.println("药物ID:\t" + drugIdStr);
-            String[] strings = drugIdStr.substring(1, drugIdStr.length()-1).split(", ");
+            String[] strings = drugIdStr.substring(1, drugIdStr.length() - 1).split(", ");
             List<Integer> drugId = new ArrayList<>(strings.length);
-            for (String str : strings){
+            for (String str : strings) {
                 drugId.add(Integer.parseInt(str));
             }
             List<String> drugName = new ArrayList<>(drugId.size());
-            for (int i : drugId){
-                drugName.add(sampleImportTool.getDrugList().get(i-20000));
+            for (int i : drugId) {
+                drugName.add(sampleImportTool.getDrugList().get(i - 20000));
             }
             System.out.println("药物名:\t" + drugName);
             System.out.println("样本量:\t" + samples.size());
@@ -235,7 +231,7 @@ class PrescriptionSyntheticSystemApplicationTests {
         sampleCleanTool.clean(sampleList);
 
         System.out.println("wordMap size " + sampleList.size());
-        Lda model = new Lda(sampleImportTool.getDiagnosisList().size(), alpha, beta, iteration, saveStep, beginSaveIters);
+        Lda model = new Lda(alpha, beta, iteration, saveStep, beginSaveIters);
         System.out.println("1 Initialize the model ...");
         model.initializeModel(sampleList, sampleImportTool.getDiagnosisList() ,sampleImportTool.getDrugList());
         System.out.println("2 Learning and Saving the model ...");
