@@ -14,6 +14,7 @@ import com.ogic.prescriptionsyntheticsystem.mapper.DMCheckMapper;
 import com.ogic.prescriptionsyntheticsystem.mapper.DMDrugMapper;
 import com.ogic.prescriptionsyntheticsystem.service.Apriori;
 import com.ogic.prescriptionsyntheticsystem.service.Kmeans;
+import com.ogic.prescriptionsyntheticsystem.service.Lda;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -210,6 +211,38 @@ class PrescriptionSyntheticSystemApplicationTests {
         for (AprioriRuleWithBelieveDegree aprioriRuleWithBelieveDegree : aprioriRuleWithBelieveDegrees){
             System.out.println(aprioriRuleWithBelieveDegree);
         }
+    }
+
+    @Test
+    public void ldaText() throws IOException {
+
+
+        float alpha = 0.5f; //usual value is 50 / K
+        float beta = 0.1f;//usual value is 0.1
+        int iteration = 1000;
+        int saveStep = 100;
+        int beginSaveIters = 500;
+
+        SampleImportTool sampleImportTool = new SampleImportTool("/home/ogic/Desktop/data.xls");
+        try {
+            sampleImportTool.readExcel(1);
+        }catch (UnitUnfixedException e){
+            System.out.println(e.getUnitError());
+            e.printStackTrace();
+        }
+        List<Sample> sampleList = sampleImportTool.getSampleList();
+        SampleCleanTool sampleCleanTool = new SampleCleanTool();
+        sampleCleanTool.clean(sampleList);
+
+        System.out.println("wordMap size " + sampleList.size());
+        Lda model = new Lda(sampleImportTool.getDiagnosisList().size(), alpha, beta, iteration, saveStep, beginSaveIters);
+        System.out.println("1 Initialize the model ...");
+        model.initializeModel(sampleList, sampleImportTool.getDiagnosisList() ,sampleImportTool.getDrugList());
+        System.out.println("2 Learning and Saving the model ...");
+        model.inferenceModel();
+        System.out.println("3 Output the final model ...");
+        model.saveIteratedModel(iteration);
+        System.out.println("Done!");
     }
 
 }

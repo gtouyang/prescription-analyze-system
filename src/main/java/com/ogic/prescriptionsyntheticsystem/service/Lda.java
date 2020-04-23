@@ -1,6 +1,5 @@
 package com.ogic.prescriptionsyntheticsystem.service;
 
-import ch.qos.logback.core.util.FileUtil;
 import com.ogic.prescriptionsyntheticsystem.entity.Sample;
 
 import java.io.BufferedWriter;
@@ -15,23 +14,26 @@ import java.util.List;
  * @author Mr.chen
  */
 public class Lda {
-    int [][] doc;//word index array
-    int drugNumber, diagnosisNumber, sampleNumber;//vocabulary size, topic number, document number
-    int [][] z;//topic label array
-    float alpha; //doc-topic dirichlet prior parameter
-    float beta; //topic-word dirichlet prior parameter
-    int [][] nmk;//given document m, count times of topic k. M*K
-    int [][] nkt;//given topic k, count times of term t. K*V
+    int [][] data;//drug index array
+    int drugNumber, allDiagnosisSize, sampleNumber;//vocabulary size, diagnosis number, sample number
+    int [][] z;//diagnosis label array
+    float alpha; //sample-diagnosis dirichlet prior parameter
+    float beta; //diagnosis-drug dirichlet prior parameter
+    int [][] nmk;//given sample m, count times of diagnosis k. M*K
+    int [][] nkt;//given diagnosis k, count times of term t. K*V
     int [] nmkSum;//Sum for each row in nmk
     int [] nktSum;//Sum for each row in nkt
-    double [][] phi;//Parameters for topic-word distribution K*V
-    double [][] theta;//Parameters for doc-topic distribution M*K
+    double [][] phi;//Parameters for diagnosis-drug distribution K*V
+    double [][] theta;//Parameters for sample-diagnosis distribution M*K
     int iterations;//Times of iterations
     int saveStep;//The number of iterations between two saving
     int beginSaveIters;//Begin save model at this iteration
+    List<Sample> samples;
+    List<String> diagnosisStrList;
+    List<String> drugStrList;
 
-    public Lda(int diagnosisNumber, float alpha, float beta, int iterations, int saveStep, int beginSaveIters) {
-        this.diagnosisNumber = diagnosisNumber;
+    public Lda(int allDiagnosisSize, float alpha, float beta, int iterations, int saveStep, int beginSaveIters) {
+        this.allDiagnosisSize = allDiagnosisSize;
         this.alpha = alpha;
         this.beta = beta;
         this.iterations = iterations;
@@ -39,49 +41,54 @@ public class Lda {
         this.beginSaveIters = beginSaveIters;
     }
 
-    public void initializeModel(List<Sample> samples, List<String> drugStrList) {
+    public void initializeModel(List<Sample> samples, List<String> diagnosisStrList, List<String> drugStrList) {
         // TODO Auto-generated method stub
         sampleNumber = samples.size();
+        this.samples = samples;
+        this.diagnosisStrList = diagnosisStrList;
+        this.drugStrList = drugStrList;
         drugNumber = drugStrList.size();
-        nmk = new int [sampleNumber][diagnosisNumber];
-        nkt = new int[diagnosisNumber][drugNumber];
+        nmk = new int [sampleNumber][allDiagnosisSize];
+        nkt = new int[allDiagnosisSize][drugNumber];
         nmkSum = new int[sampleNumber];
-        nktSum = new int[diagnosisNumber];
-        phi = new double[diagnosisNumber][drugNumber];
-        theta = new double[sampleNumber][diagnosisNumber];
+        nktSum = new int[allDiagnosisSize];
+        phi = new double[allDiagnosisSize][drugNumber];
+        theta = new double[sampleNumber][allDiagnosisSize];
 
-        //initialize documents index array
-        doc = new int[sampleNumber][];
+        //initialize samples index array
+        data = new int[sampleNumber][];
         for(int m = 0; m < sampleNumber; m++){
             //Notice the limit of memory
             int N = samples.get(m).getDrugs().size();
-            doc[m] = new int[N];
+            data[m] = new int[N];
             for(int n = 0; n < N; n++){
-                doc[m][n] = samples.get(m).getDrugs().get(n);
+                data[m][n] = samples.get(m).getDrugs().get(n) - 20000;
             }
         }
 
-        //initialize topic lable z for each word
+        //initialize diagnosis lable z for each drug
         z = new int[sampleNumber][];
         for(int m = 0; m < sampleNumber; m++){
             int N = samples.get(m).getDrugs().size();
             z[m] = new int[N];
+            List<Integer> thisSampleDiagnoses = samples.get(m).getDiagnoses();
             for(int n = 0; n < N; n++){
-                int initTopic = (int)(Math.random() * diagnosisNumber);// From 0 to K - 1
-                z[m][n] = initTopic;
-                //number of words in doc m assigned to topic initTopic add 1
-                nmk[m][initTopic]++;
-                //number of terms doc[m][n] assigned to topic initTopic add 1
-                nkt[initTopic][doc[m][n]]++;
-                // total number of words assigned to topic initTopic add 1
-                nktSum[initTopic]++;
+                int initDiagnosis = (int)(Math.random() * thisSampleDiagnoses.size());// From 0 to K - 1
+                initDiagnosis = thisSampleDiagnoses.get(initDiagnosis) - 10000;
+                z[m][n] = initDiagnosis;
+                //number of drugs in sample m assigned to diagnosis initDiagnosis add 1
+                nmk[m][initDiagnosis]++;
+                //number of terms sample[m][n] assigned to diagnosis initDiagnosis add 1
+                nkt[initDiagnosis][data[m][n]]++;
+                // total number of drugs assigned to diagnosis initDiagnosis add 1
+                nktSum[initDiagnosis]++;
             }
-            // total number of words in document m is N
+            // total number of drugs in sample m is N
             nmkSum[m] = N;
         }
     }
 
-    public void inferenceModel(List<Sample> samples, List<String> drugStrList) throws IOException {
+    public void inferenceModel() throws IOException {
         // TODO Auto-generated method stub
         if(iterations < saveStep + beginSaveIters){
             System.err.println("Error: the number of iterations should be larger than " + (saveStep + beginSaveIters));
@@ -95,7 +102,7 @@ public class Lda {
                 //Firstly update parameters
                 updateEstimatedParameters();
                 //Secondly print model variables
-                saveIteratedModel(i, samples, drugStrList);
+                saveIteratedModel(i);
             }
 
             //Use Gibbs Sampling to update z[][]
@@ -103,8 +110,8 @@ public class Lda {
                 int N = samples.get(m).getDrugs().size();
                 for(int n = 0; n < N; n++){
                     // Sample from p(z_i|z_-i, w)
-                    int newTopic = sampleTopicZ(m, n);
-                    z[m][n] = newTopic;
+                    int newDiagnosis = sampleDiagnosisZ(m, n);
+                    z[m][n] = newDiagnosis;
                 }
             }
         }
@@ -112,68 +119,71 @@ public class Lda {
 
     private void updateEstimatedParameters() {
         // TODO Auto-generated method stub
-        for(int k = 0; k < diagnosisNumber; k++){
+        for(int k = 0; k < allDiagnosisSize; k++){
             for(int t = 0; t < drugNumber; t++){
                 phi[k][t] = (nkt[k][t] + beta) / (nktSum[k] + drugNumber * beta);
             }
         }
 
         for(int m = 0; m < sampleNumber; m++){
-            for(int k = 0; k < diagnosisNumber; k++){
-                theta[m][k] = (nmk[m][k] + alpha) / (nmkSum[m] + diagnosisNumber * alpha);
+            for(int k = 0; k < allDiagnosisSize; k++){
+                theta[m][k] = (nmk[m][k] + alpha) / (nmkSum[m] + allDiagnosisSize * alpha);
             }
         }
     }
 
-    private int sampleTopicZ(int m, int n) {
+    private int sampleDiagnosisZ(int m, int n) {
         // TODO Auto-generated method stub
         // Sample from p(z_i|z_-i, w) using Gibbs upde rule
 
-        //Remove topic label for w_{m,n}
-        int oldTopic = z[m][n];
-        nmk[m][oldTopic]--;
-        nkt[oldTopic][doc[m][n]]--;
+        //Remove diagnosis label for w_{m,n}
+        int oldDiagnosis = z[m][n];
+        nmk[m][oldDiagnosis]--;
+        nkt[oldDiagnosis][data[m][n]]--;
         nmkSum[m]--;
-        nktSum[oldTopic]--;
+        nktSum[oldDiagnosis]--;
 
         //Compute p(z_i = k|z_-i, w)
-        double [] p = new double[diagnosisNumber];
-        for(int k = 0; k < diagnosisNumber; k++){
-            p[k] = (nkt[k][doc[m][n]] + beta) / (nktSum[k] + drugNumber * beta) * (nmk[m][k] + alpha) / (nmkSum[m] + diagnosisNumber * alpha);
+        List<Integer> thisSampleDiagnoses = samples.get(m).getDiagnoses();
+        double [] p = new double[thisSampleDiagnoses.size()];
+        for(int k = 0; k < thisSampleDiagnoses.size(); k++){
+            p[k] = (nkt[thisSampleDiagnoses.get(k)-10000][data[m][n]] + beta) / (nktSum[thisSampleDiagnoses.get(k)-10000] + drugNumber * beta) * (nmk[m][thisSampleDiagnoses.get(k)-10000] + alpha) / (nmkSum[m] + allDiagnosisSize * alpha);
         }
 
-        //Sample a new topic label for w_{m, n} like roulette
+        //Sample a new diagnosis label for w_{m, n} like roulette
         //Compute cumulated probability for p
-        for(int k = 1; k < diagnosisNumber; k++){
+        for(int k = 1; k < thisSampleDiagnoses.size(); k++){
             p[k] += p[k - 1];
         }
-        double u = Math.random() * p[diagnosisNumber - 1]; //p[] is unnormalised
-        int newTopic;
-        for(newTopic = 0; newTopic < diagnosisNumber; newTopic++){
-            if(u < p[newTopic]){
+        double u = Math.random() * p[thisSampleDiagnoses.size() - 1]; //p[] is unnormalised
+        int newDiagnosis;
+        for(newDiagnosis = 0; newDiagnosis < thisSampleDiagnoses.size(); newDiagnosis++){
+            if(u < p[newDiagnosis]){
                 break;
             }
         }
 
-        //Add new topic label for w_{m, n}
-        nmk[m][newTopic]++;
-        nkt[newTopic][doc[m][n]]++;
+        newDiagnosis = thisSampleDiagnoses.get(newDiagnosis)-10000;
+
+        //Add new diagnosis label for w_{m, n}
+        nmk[m][newDiagnosis]++;
+        nkt[newDiagnosis][data[m][n]]++;
         nmkSum[m]++;
-        nktSum[newTopic]++;
-        return newTopic;
+        nktSum[newDiagnosis]++;
+        return newDiagnosis;
     }
 
-    public void saveIteratedModel(int iters, List<Sample> samples, List<String> drugStrList) throws IOException {
+    public void saveIteratedModel(int iters) throws IOException {
         // TODO Auto-generated method stub
-        //lda.params lda.phi lda.theta lda.tassign lda.twords
+        //lda.params lda.phi lda.theta lda.tassign lda.tdrugs
         //lda.params
         String resPath = "/home/ogic/Desktop/";
         String modelName = "lda_" + iters;
         List<String> lines = new ArrayList<String>();
         lines.add("alpha = " + alpha);
         lines.add("beta = " + beta);
-        lines.add("topicNum = " + diagnosisNumber);
-        lines.add("docNum = " + sampleNumber);
+        lines.add("diagnosisNum = " + allDiagnosisSize);
+        lines.add("sampleNum = " + sampleNumber);
         lines.add("termNum = " + drugNumber);
         lines.add("iterations = " + iterations);
         lines.add("saveStep = " + saveStep);
@@ -182,7 +192,7 @@ public class Lda {
 
         //lda.phi K*V
         BufferedWriter writer = new BufferedWriter(new FileWriter(resPath + modelName + ".phi"));
-        for (int i = 0; i < diagnosisNumber; i++){
+        for (int i = 0; i < allDiagnosisSize; i++){
             for (int j = 0; j < drugNumber; j++){
                 writer.write(phi[i][j] + "\t");
             }
@@ -193,7 +203,7 @@ public class Lda {
         //lda.theta M*K
         writer = new BufferedWriter(new FileWriter(resPath + modelName + ".theta"));
         for(int i = 0; i < sampleNumber; i++){
-            for(int j = 0; j < diagnosisNumber; j++){
+            for(int j = 0; j < allDiagnosisSize; j++){
                 writer.write(theta[i][j] + "\t");
             }
             writer.write("\n");
@@ -203,43 +213,43 @@ public class Lda {
         //lda.tassign
         writer = new BufferedWriter(new FileWriter(resPath + modelName + ".tassign"));
         for(int m = 0; m < sampleNumber; m++){
-            for(int n = 0; n < doc[m].length; n++){
-                writer.write(doc[m][n] + ":" + z[m][n] + "\t");
+            for(int n = 0; n < data[m].length; n++){
+                writer.write(data[m][n] + ":" + z[m][n] + "\t");
             }
             writer.write("\n");
         }
         writer.close();
 
-        //lda.twords phi[][] K*V
-        writer = new BufferedWriter(new FileWriter(resPath + modelName + ".twords"));
-        int topNum = 20; //Find the top 20 topic words in each topic
-        for(int i = 0; i < diagnosisNumber; i++){
-            List<Integer> tWordsIndexArray = new ArrayList<Integer>();
+        //lda.tdrugs phi[][] K*V
+        writer = new BufferedWriter(new FileWriter(resPath + modelName + ".tdrugs"));
+        int topNum = 20; //Find the top 20 diagnosis drugs in each diagnosis
+        for(int i = 0; i < allDiagnosisSize; i++){
+            List<Integer> tDrugsIndexArray = new ArrayList<Integer>();
             for(int j = 0; j < drugNumber; j++){
-                tWordsIndexArray.add(new Integer(j));
+                tDrugsIndexArray.add(new Integer(j));
             }
-            Collections.sort(tWordsIndexArray, new Lda.TwordsComparable(phi[i]));
-            writer.write("topic " + i + "\t:\t");
+            Collections.sort(tDrugsIndexArray, new Lda.TdrugsComparable(phi[i]));
+            writer.write("diagnosis " + i + "\t" + diagnosisStrList.get(i) +"\t:\n");
             for(int t = 0; t < topNum; t++){
-                writer.write(drugStrList.get(tWordsIndexArray.get(t)) + " " + phi[i][tWordsIndexArray.get(t)] + "\t");
+                writer.write(drugStrList.get(tDrugsIndexArray.get(t)) + " " + phi[i][tDrugsIndexArray.get(t)] + "\n");
             }
             writer.write("\n");
         }
         writer.close();
     }
 
-    public class TwordsComparable implements Comparator<Integer> {
+    public class TdrugsComparable implements Comparator<Integer> {
 
-        public double [] sortProb; // Store probability of each word in topic k
+        public double [] sortProb; // Store probability of each drug in diagnosis k
 
-        public TwordsComparable (double[] sortProb){
+        public TdrugsComparable (double[] sortProb){
             this.sortProb = sortProb;
         }
 
         @Override
         public int compare(Integer o1, Integer o2) {
             // TODO Auto-generated method stub
-            //Sort topic word index according to the probability of each word in topic k
+            //Sort diagnosis drug index according to the probability of each drug in diagnosis k
             if(sortProb[o1] > sortProb[o2]) {
                 return -1;
             } else if(sortProb[o1] < sortProb[o2]) {
