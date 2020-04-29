@@ -24,6 +24,9 @@ public class DrugDetail {
      */
     private String unit;
 
+    public DrugDetail() {
+    }
+
     public DrugDetail(int drugId, int amount, String unit) {
         this.drugId = drugId;
         this.amount = amount;
@@ -49,6 +52,16 @@ public class DrugDetail {
 
     public DrugDetail setUnit(String unit) {
         this.unit = unit;
+        return this;
+    }
+
+    public DrugDetail setDrugId(int drugId) {
+        this.drugId = drugId;
+        return this;
+    }
+
+    public DrugDetail setAmount(int amount) {
+        this.amount = amount;
         return this;
     }
 }

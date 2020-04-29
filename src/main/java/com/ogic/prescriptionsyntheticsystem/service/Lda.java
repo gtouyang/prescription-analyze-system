@@ -244,7 +244,10 @@ public class Lda {
         int[] thisSampleDiagnoses = diagnosisData[m];
         double [] p = new double[thisSampleDiagnoses.length];
         for(int k = 0; k < thisSampleDiagnoses.length; k++){
-            p[k] = (nkt[thisSampleDiagnoses[k]][drugData[m][n]] + beta) / (nktSum[thisSampleDiagnoses[k]] + allDrugSize * beta) * (nmk[m][thisSampleDiagnoses[k]] + alpha) / (nmkSum[m] + allDiagnosisSize * alpha);
+            p[k] = (nkt[thisSampleDiagnoses[k]][drugData[m][n]] + beta)
+                    / (nktSum[thisSampleDiagnoses[k]] + allDrugSize * beta)
+                    * (nmk[m][thisSampleDiagnoses[k]] + alpha)
+                    / (nmkSum[m] + allDiagnosisSize * alpha);
         }
 
         /*根据Dirichlet分布计算该药物分别属于处方样本中各个诊断的概率*/

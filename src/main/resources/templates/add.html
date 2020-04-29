@@ -50,7 +50,7 @@
 				<div th:replace="~{commons/sidebar::sidebar(activeUri = 'add')}"/>
 
 				<main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
-					<form th:action="@{/add-emp}" th:method="post">
+					<form th:action="@{/add}" th:method="post">
 						<div class="form-group">
 							<label style="display: inline-block; width: 10%">患者ID</label>
 							<input th:name="patientId" type="text" class="form-control" placeholder="1234567890" style="display: inline-block; width: 80%">
@@ -63,82 +63,157 @@
 
 						<div class="form-group" id="diagnosis1">
 							<label style="display: inline-block; width: 10%">诊断1</label>
-							<select class="form-control" th:name="department.id" style="display: inline-block; width: 80%">
+							<select class="form-control" th:name="diagnosis1" style="display: inline-block; width: 80%">
 								<option th:value="${diagnosis.getId()}" th:each="diagnosis:${diagnoses}" th:text="${diagnosis.getName()}"/>
 							</select>
-							<button class="btn btn-sm btn-primary" onclick="displatDiagnosis2()" th:style="'display: none; width: 2%;margin-right: 2%; margin-left:2%; float:right'">+</button>
+							<button type="button" id="addDiagnosis2Button" class="btn btn-sm btn-primary" onclick="addDiagnosis(2)" th:style="'display: inline-block; width: 38px;margin-right: 2%; margin-left:2%; float:right; height:38px'">+</button>
 						</div>
 
-						<div class="form-group" id="diagnosis2" th:style="'display: block'">
+						<div class="form-group" id="diagnosis2" th:style="'display: none'">
 							<label style="display: inline-block; width: 10%">诊断2</label>
-							<select class="form-control" th:name="department.id" style="display: inline-block; width: 80%">
+							<select class="form-control" th:name="diagnosis2" style="display: inline-block; width: 80%">
 								<option th:value="${diagnosis.getId()}" th:each="diagnosis:${diagnoses}" th:text="${diagnosis.getName()}"/>
 							</select>
-							<button class="btn btn-sm btn-primary" onclick="displatDiagnosis2()" th:style="'display: none; width: 2%;margin-right: 2%; margin-left:2%; float:right'">+</button>
-							<button class="btn btn-sm btn-danger" onclick="displatDiagnosis2()" th:style="'display: none; width: 2%; float:right'">-</button>
+							<button type="button" id="addDiagnosis3Button" class="btn btn-sm btn-primary" onclick="addDiagnosis(3)" th:style="'display: none; width: 38px;margin-right: 2%; margin-left:2%; float:right; height:38px'">+</button>
+							<button type="button" id="reduceDiagnosis2Button" class="btn btn-sm btn-danger" onclick="reduceDiagnosis(2)" th:style="'display: none; width: 38px; float:right; height:38px'">-</button>
 						</div>
 
-						<div class="form-group" id="diagnosis3" th:style="'display: block'">
+						<div class="form-group" id="diagnosis3" th:style="'display: none'">
 							<label style="display: inline-block; width: 10%">诊断3</label>
-							<select class="form-control" th:name="department.id" style="display: inline-block; width: 80%">
+							<select class="form-control" th:name="diagnosis3" style="display: inline-block; width: 80%">
 								<option th:value="${diagnosis.getId()}" th:each="diagnosis:${diagnoses}"
 										th:text="${diagnosis.getName()}"/>
 							</select>
-							<button class="btn btn-sm btn-primary" onclick="displatDiagnosis2()" th:style="'display: inline-block; width: 38px;margin-right: 2%; margin-left:2%; float:right; height:38px'">+</button>
-							<button class="btn btn-sm btn-danger" onclick="displatDiagnosis2()" th:style="'display: inline-block; width: 38px; float:right; height:38px'">-</button>
+							<button type="button" id="addDiagnosis4Button" class="btn btn-sm btn-primary" onclick="addDiagnosis(4)" th:style="'display: none; width: 38px;margin-right: 2%; margin-left:2%; float:right; height:38px'">+</button>
+							<button type="button" id="reduceDiagnosis3Button" class="btn btn-sm btn-danger" onclick="reduceDiagnosis(3)" th:style="'display: none; width: 38px; float:right; height:38px'">-</button>
 						</div>
 
 						<div class="form-group" id="diagnosis4" th:style="'display: none'">
 							<label style="display: inline-block; width: 10%">诊断4</label>
-							<select class="form-control" th:name="department.id" style="display: inline-block; width: 80%">
+							<select class="form-control" th:name="diagnosis4" style="display: inline-block; width: 80%">
 								<option th:value="${diagnosis.getId()}" th:each="diagnosis:${diagnoses}"
 										th:text="${diagnosis.getName()}"/>
 							</select>
-							<button class="btn btn-sm btn-danger" onclick="displatDiagnosis2()" th:style="'display: none; width: 2%; float:right'">-</button>
+							<button type="button" id="reduceDiagnosis4Button" class="btn btn-sm btn-danger" onclick="reduceDiagnosis(4)" th:style="'display: none; width: 38px; float:right; height:38px'">-</button>
 						</div>
 
-						<div class="form-group">
+						<div class="form-group" id="drug1">
 							<label style="display: inline-block; width: 10%">药物1</label>
-							<select class="form-control" th:name="drug.id" style="display: inline-block; width: 30%">
+							<select class="form-control" th:name="drug1.drugId" style="display: inline-block; width: 30%">
 								<option th:value="${drug.getId()}" th:each="drug:${drugs}"
 										th:text="${drug.getName()}"/>
 							</select>
-							<input th:name="amount" type="number" class="form-control" placeholder="数量" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'">
-							<input th:name="unit" type="text" class="form-control" placeholder="单位" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'">
+							<input th:name="drug1.amount" type="number" class="form-control" placeholder="数量" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'" th:value="0">
+							<input th:name="drug1.unit" type="text" class="form-control" placeholder="单位" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'">
+							<button type="button" id="addDrug2Button" class="btn btn-sm btn-primary" onclick="addDrug(2)" th:style="'display: inline-block; width: 38px;margin-right: 2%; margin-left:2%; float:right; height:38px'">+</button>
 						</div>
 
-						<div class="form-group">
+						<div class="form-group" id="drug2" th:style="'display: none'">
 							<label style="display: inline-block; width: 10%">药物2</label>
-							<select class="form-control" th:name="drug.id" style="display: inline-block; width: 30%">
+							<select class="form-control" th:name="drug2.drugId" style="display: inline-block; width: 30%">
 								<option th:value="${drug.getId()}" th:each="drug:${drugs}"
 										th:text="${drug.getName()}"/>
 							</select>
-							<input th:name="amount" type="number" class="form-control" placeholder="数量" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'">
-							<input th:name="unit" type="text" class="form-control" placeholder="单位" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'">
+							<input th:name="drug2.amount" type="number" class="form-control" placeholder="数量" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'" th:value="0">
+							<input th:name="drug2.unit" type="text" class="form-control" placeholder="单位" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'">
+							<button type="button" id="addDrug3Button" class="btn btn-sm btn-primary" onclick="addDrug(3)" th:style="'display: none; width: 38px;margin-right: 2%; margin-left:2%; float:right; height:38px'">+</button>
+							<button type="button" id="reduceDrug2Button" class="btn btn-sm btn-danger" onclick="reduceDrug(2)" th:style="'display: none; width: 38px; float:right; height:38px'">-</button>
 						</div>
 
-						<div class="form-group">
+						<div class="form-group" id="drug3" th:style="'display: none'">
 							<label style="display: inline-block; width: 10%">药物3</label>
-							<select class="form-control" th:name="drug.id" style="display: inline-block; width: 30%">
+							<select class="form-control" th:name="drug3.drugId" style="display: inline-block; width: 30%">
 								<option th:value="${drug.getId()}" th:each="drug:${drugs}"
 										th:text="${drug.getName()}"/>
 							</select>
-							<input th:name="amount" type="number" class="form-control" placeholder="数量" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'">
-							<input th:name="unit" type="text" class="form-control" placeholder="单位" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'">
+							<input th:name="drug3.amount" type="number" class="form-control" placeholder="数量" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'" th:value="0">
+							<input th:name="drug3.unit" type="text" class="form-control" placeholder="单位" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'">
+							<button type="button" id="addDrug4Button" class="btn btn-sm btn-primary" onclick="addDrug(4)" th:style="'display: none; width: 38px;margin-right: 2%; margin-left:2%; float:right; height:38px'">+</button>
+							<button type="button" id="reduceDrug3Button" class="btn btn-sm btn-danger" onclick="reduceDrug(3)" th:style="'display: none; width: 38px; float:right; height:38px'">-</button>
 						</div>
 
-						<div class="form-group">
+						<div class="form-group" id="drug4" th:style="'display: none'">
 							<label style="display: inline-block; width: 10%">药物4</label>
-							<select class="form-control" th:name="drug.id" style="display: inline-block; width: 30%">
+							<select class="form-control" th:name="drug4.drugId" style="display: inline-block; width: 30%">
 								<option th:value="${drug.getId()}" th:each="drug:${drugs}"
 										th:text="${drug.getName()}"/>
 							</select>
-							<input th:name="amount" type="number" class="form-control" placeholder="数量" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'">
-							<input th:name="unit" type="text" class="form-control" placeholder="单位" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'">
-							<button class="btn btn-sm btn-primary" onclick="displatDiagnosis2()" th:style="'display: inline-block; width: 38px;margin-right: 2%; margin-left:2%; float:right; height:38px'">+</button>
-							<button class="btn btn-sm btn-danger" onclick="displatDiagnosis2()" th:style="'display: inline-block; width: 38px; float:right; height:38px'">-</button>
+							<input th:name="drug4.amount" type="number" class="form-control" placeholder="数量" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'" th:value="0">
+							<input th:name="drug4.unit" type="text" class="form-control" placeholder="单位" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'">
+							<button type="button" id="addDrug5Button" class="btn btn-sm btn-primary" onclick="addDrug(5)" th:style="'display: none; width: 38px;margin-right: 2%; margin-left:2%; float:right; height:38px'">+</button>
+							<button type="button" id="reduceDrug4Button" class="btn btn-sm btn-danger" onclick="reduceDrug(4)" th:style="'display: none; width: 38px; float:right; height:38px'">-</button>
 						</div>
 
+						<div class="form-group" id="drug5" th:style="'display: none'">
+							<label style="display: inline-block; width: 10%">药物5</label>
+							<select class="form-control" th:name="drug5.drugId" style="display: inline-block; width: 30%">
+								<option th:value="${drug.getId()}" th:each="drug:${drugs}"
+										th:text="${drug.getName()}"/>
+							</select>
+							<input th:name="drug5.amount" type="number" class="form-control" placeholder="数量" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'" th:value="0">
+							<input th:name="drug5.unit" type="text" class="form-control" placeholder="单位" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'">
+							<button type="button" id="addDrug6Button" class="btn btn-sm btn-primary" onclick="addDrug(6)" th:style="'display: none; width: 38px;margin-right: 2%; margin-left:2%; float:right; height:38px'">+</button>
+							<button type="button" id="reduceDrug5Button" class="btn btn-sm btn-danger" onclick="reduceDrug(5)" th:style="'display: none; width: 38px; float:right; height:38px'">-</button>
+						</div>
+
+						<div class="form-group" id="drug6" th:style="'display: none'">
+							<label style="display: inline-block; width: 10%">药物6</label>
+							<select class="form-control" th:name="drug6.drugId" style="display: inline-block; width: 30%">
+								<option th:value="${drug.getId()}" th:each="drug:${drugs}"
+										th:text="${drug.getName()}"/>
+							</select>
+							<input th:name="drug6.amount" type="number" class="form-control" placeholder="数量" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'" th:value="0">
+							<input th:name="drug6.unit" type="text" class="form-control" placeholder="单位" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'">
+							<button type="button" id="addDrug7Button" class="btn btn-sm btn-primary" onclick="addDrug(7)" th:style="'display: none; width: 38px;margin-right: 2%; margin-left:2%; float:right; height:38px'">+</button>
+							<button type="button" id="reduceDrug6Button" class="btn btn-sm btn-danger" onclick="reduceDrug(6)" th:style="'display: none; width: 38px; float:right; height:38px'">-</button>
+						</div>
+
+						<div class="form-group" id="drug7" th:style="'display: none'">
+							<label style="display: inline-block; width: 10%">药物7</label>
+							<select class="form-control" th:name="drug7.drugId" style="display: inline-block; width: 30%">
+								<option th:value="${drug.getId()}" th:each="drug:${drugs}"
+										th:text="${drug.getName()}"/>
+							</select>
+							<input th:name="drug7.amount" type="number" class="form-control" placeholder="数量" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'" th:value="0">
+							<input th:name="drug7.unit" type="text" class="form-control" placeholder="单位" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'">
+							<button type="button" id="addDrug8Button" class="btn btn-sm btn-primary" onclick="addDrug(8)" th:style="'display: none; width: 38px;margin-right: 2%; margin-left:2%; float:right; height:38px'">+</button>
+							<button type="button" id="reduceDrug7Button" class="btn btn-sm btn-danger" onclick="reduceDrug(7)" th:style="'display: none; width: 38px; float:right; height:38px'">-</button>
+						</div>
+
+						<div class="form-group" id="drug8" th:style="'display: none'">
+							<label style="display: inline-block; width: 10%">药物8</label>
+							<select class="form-control" th:name="drug8.drugId" style="display: inline-block; width: 30%">
+								<option th:value="${drug.getId()}" th:each="drug:${drugs}"
+										th:text="${drug.getName()}"/>
+							</select>
+							<input th:name="drug8.amount" type="number" class="form-control" placeholder="数量" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'" th:value="0">
+							<input th:name="drug8.unit" type="text" class="form-control" placeholder="单位" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'">
+							<button type="button" id="addDrug9Button" class="btn btn-sm btn-primary" onclick="addDrug(9)" th:style="'display: none; width: 38px;margin-right: 2%; margin-left:2%; float:right; height:38px'">+</button>
+							<button type="button" id="reduceDrug8Button" class="btn btn-sm btn-danger" onclick="reduceDrug(8)" th:style="'display: none; width: 38px; float:right; height:38px'">-</button>
+						</div>
+
+						<div class="form-group" id="drug9" th:style="'display: none'">
+							<label style="display: inline-block; width: 10%">药物9</label>
+							<select class="form-control" th:name="drug9.drugId" style="display: inline-block; width: 30%">
+								<option th:value="${drug.getId()}" th:each="drug:${drugs}"
+										th:text="${drug.getName()}"/>
+							</select>
+							<input th:name="drug9.amount" type="number" class="form-control" placeholder="数量" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'" th:value="0">
+							<input th:name="drug9.unit" type="text" class="form-control" placeholder="单位" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'">
+							<button type="button" id="addDrug10Button" class="btn btn-sm btn-primary" onclick="addDrug(10)" th:style="'display: none; width: 38px;margin-right: 2%; margin-left:2%; float:right; height:38px'">+</button>
+							<button type="button" id="reduceDrug9Button" class="btn btn-sm btn-danger" onclick="reduceDrug(9)" th:style="'display: none; width: 38px; float:right; height:38px'">-</button>
+						</div>
+
+						<div class="form-group" id="drug10" th:style="'display: none'">
+							<label style="display: inline-block; width: 10%">药物10</label>
+							<select class="form-control" th:name="drug10.drugId" style="display: inline-block; width: 30%">
+								<option th:value="${drug.getId()}" th:each="drug:${drugs}"
+										th:text="${drug.getName()}"/>
+							</select>
+							<input th:name="drug10.amount" type="number" class="form-control" placeholder="数量" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'" th:value="0">
+							<input th:name="drug10.unit" type="text" class="form-control" placeholder="单位" th:style="'display: inline-block;width: 20%;margin-left: 5%; margin-right: 0'">
+							<button type="button" id="reduceDrug10Button" class="btn btn-sm btn-danger" onclick="reduceDrug(10)" th:style="'display: none; width: 38px; float:right; height:38px'">-</button>
+						</div>
 
 						<button type="submit" class="btn btn-primary btn-lg" style="width: 100%" >add</button>
 					</form>
@@ -157,6 +232,52 @@
 		<script type="text/javascript" src="../static/js/feather.min.js" th:src="@{/js/feather.min.js}"></script>
 		<script>
 			feather.replace()
+		</script>
+
+		<script>
+			function addDiagnosis(index) {
+				document.getElementById("diagnosis" + index).style.display="block";
+				document.getElementById("addDiagnosis" + index + "Button").style.display="none";
+				document.getElementById("reduceDiagnosis" + index + "Button").style.display="inline-block";
+				if (index < 4){
+					document.getElementById("addDiagnosis" + ++index + "Button").style.display="inline-block";
+					index--;
+				}
+
+				if (index > 2) {
+					document.getElementById("reduceDiagnosis" + --index + "Button").style.display = "none";
+				}
+			}
+
+			function reduceDiagnosis(index) {
+				document.getElementById("diagnosis" + index).style.display="none";
+				document.getElementById("addDiagnosis" + index + "Button").style.display="inline-block";
+				if (index > 2){
+					document.getElementById("reduceDiagnosis" + --index + "Button").style.display = "inline-block";
+				}
+			}
+
+			function addDrug(index) {
+				document.getElementById("drug" + index).style.display="block";
+				document.getElementById("addDrug" + index + "Button").style.display="none";
+				document.getElementById("reduceDrug" + index + "Button").style.display="inline-block";
+				if (index < 10){
+					document.getElementById("addDrug" + ++index + "Button").style.display="inline-block";
+					index--;
+				}
+
+				if (index > 2) {
+					document.getElementById("reduceDrug" + --index + "Button").style.display = "none";
+				}
+			}
+
+			function reduceDrug(index) {
+				document.getElementById("drug" + index).style.display="none";
+				document.getElementById("addDrug" + index + "Button").style.display="inline-block";
+				if (index > 2){
+					document.getElementById("reduceDrug" + --index + "Button").style.display = "inline-block";
+				}
+			}
 		</script>
 
 		<!-- Graphs -->
