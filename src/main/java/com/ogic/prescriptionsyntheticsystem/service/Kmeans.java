@@ -20,12 +20,15 @@ public class Kmeans{
      */
     private final Map<String, Map<String, List<Sample>>> dataMap;
 
+    private final Map<Integer, List<Sample>> drug2SampleMap;
+
     private List<Integer> maxSamplesDiagnoses;
 
     public Kmeans(List<Sample> originSampleList) {
         int maxSamplesNumber = 0;
         this.originSampleList = originSampleList;
         dataMap = new HashMap<>();
+        drug2SampleMap = new HashMap<>();
         for (Sample sample : originSampleList){
             String diagnosisStr = Arrays.toString(sample.getDiagnoses().toArray());
             String drugListStr = Arrays.toString(sample.getDrugs().toArray());
@@ -49,6 +52,15 @@ public class Kmeans{
             if (size > maxSamplesNumber){
                 maxSamplesDiagnoses = sample.getDiagnoses();
                 maxSamplesNumber = size;
+            }
+            for (Integer drug : sample.getDrugs()){
+                if (drug2SampleMap.containsKey(drug)){
+                    drug2SampleMap.get(drug).add(sample);
+                }else {
+                    List<Sample> newSampleList = new ArrayList<>();
+                    newSampleList.add(sample);
+                    drug2SampleMap.put(drug, newSampleList);
+                }
             }
         }
     }
@@ -239,5 +251,132 @@ public class Kmeans{
 
     public List<Integer> getMaxSamplesDiagnoses() {
         return maxSamplesDiagnoses;
+    }
+
+
+    /**
+     * 获得药物范围
+     * @param drug      指定的药物ID
+     * @return          范围
+     */
+    public List<Integer> getDrugRange(Integer drug){
+
+        /*初始化*/
+        List<Integer> result = new ArrayList<>(4);
+        List<Sample> samples = drug2SampleMap.get(drug);
+
+
+        int min = 999999;
+        int max = 0;
+        int k = 6;
+
+        /*将算法中需要用到的药物的数量提取出来加快比对过程*/
+        List<Integer> data = new ArrayList<>(samples.size());
+
+        for (int i = 0; i < samples.size(); i++){
+            Sample sample = samples.get(i);
+            List<DrugDetail> drugDetails = sample.getDrugDetails();
+            for (DrugDetail drugDetail : drugDetails){
+                if (drugDetail.getDrugId() == drug && drugDetail.getAmount() > 0){
+                    if (min > drugDetail.getAmount()){
+                        min = drugDetail.getAmount();
+                    }
+                    if (max < drugDetail.getAmount()){
+                        max = drugDetail.getAmount();
+                    }
+                    data.add(drugDetail.getAmount());
+                    break;
+                }
+            }
+        }
+
+        int[] family = new int[data.size()];
+
+        /*随机选取样本点中的K个点作为初始中心点*/
+        double[] centrePoint = new double[k];
+        Random random = new Random();
+        for (int i = 0; i < k; i++){
+            centrePoint[i] = random.nextDouble() * (max-min) + min;
+        }
+
+        /*迭代运算*/
+        boolean isConvergence = false;
+
+        while (!isConvergence){
+            isConvergence = true;
+
+            /*遍历所有样本点，找到离这样本点最近的中心点*/
+            for (int i = 0; i < data.size(); i++){
+                int closedPointIndex = 0;
+                double closedPointDistance = -1;
+                double distance = 0.0;
+                for (int j = 0; j < k; j++){
+                        distance = Math.abs(centrePoint[j] - data.get(i));
+                        if (distance < closedPointDistance || closedPointDistance < 0) {
+                            closedPointIndex = j;
+                            closedPointDistance = distance;
+                        }
+                }
+
+                /*如果该样本点之前所在的簇不是该中心点所在的簇，那说明算法还没有收敛，并将该样本点分类到新簇*/
+                if (family[i] != closedPointIndex){
+                    family[i] = closedPointIndex;
+                    isConvergence = false;
+                }
+            }
+
+            /*如果算法还没收敛则重新计算中心点的坐标*/
+            if (!isConvergence){
+                for (int i = 0; i < k; i++){
+                    double temp = 0.0;
+                    int familySize = 0;
+                    for (int j = 0; j < family.length; j++){
+                        if (family[j] == i) {
+                            temp += data.get(j);
+                            familySize ++;
+                        }
+                    }
+
+                    //如果该中心点所属的簇内没有任何样本点，则不变
+                    if(familySize > 0) {
+                        centrePoint[i] = temp / familySize;
+                    }
+                }
+            }
+
+            /*如果已经收敛了则输出结果*/
+            else {
+                int lastMaxCentrePointIndex = 0;
+                int maxCentrePointIndex = 0;
+                double maxCentrePointValue = centrePoint[0];
+                for (int i = 1; i < k; i++){
+                    if (maxCentrePointValue < centrePoint[i]){
+                        maxCentrePointValue = centrePoint[i];
+                        lastMaxCentrePointIndex = maxCentrePointIndex;
+                        maxCentrePointIndex = i;
+                    }
+                }
+                int maxNormalAmount = 0;
+                int minMoreAmount = 99999999;
+                for (int i = 0; i < data.size(); i++){
+                    if (family[i] == lastMaxCentrePointIndex || family[i] == maxCentrePointIndex){
+                        if (minMoreAmount > data.get(i)){
+                            minMoreAmount = data.get(i);
+                        }
+                    }else {
+                        if (maxNormalAmount < data.get(i)){
+                            maxNormalAmount = data.get(i);
+                        }
+                    }
+                }
+                result.add(min);
+                result.add(maxNormalAmount);
+                result.add(minMoreAmount);
+                result.add(max);
+
+            }
+
+        }
+        return result;
     }
 }

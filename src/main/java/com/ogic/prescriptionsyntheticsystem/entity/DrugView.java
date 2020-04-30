@@ -48,7 +48,12 @@ public class DrugView {
         /**
          * 过多
          */
-        TOO_MUCH_MORE
+        MUCH_MORE,
+
+        /**
+         * 通过
+         */
+        PASS
     }
 
     public DrugView(int id, String name, int amount, String unit) {
@@ -80,12 +85,17 @@ public class DrugView {
         return this;
     }
 
-    public String getJudgeResult() {
+    public JudgeState getJudgeResult() {
+        return judgeResult;
+    }
+
+    public String getJudgeResultStr() {
         switch (judgeResult){
             case INIT: return "未计算";
             case UN_USUAL: return "不常见用药";
             case MORE: return "偏多";
-            case TOO_MUCH_MORE: return "过多";
+            case MUCH_MORE: return "过多";
+            case PASS: return "通过";
             default: return "常见用药";
         }
     }

@@ -141,6 +141,7 @@ public class BaggingService {
 
         List<AprioriRuleWithBelieveDegree> diagnosis2DrugList = new ArrayList<>();
         List<AprioriRuleWithBelieveDegree> drug2DiagnosisList = new ArrayList<>();
+        List<AprioriRuleWithBelieveDegree> allContainsList = new ArrayList<>();
         boolean containsDiagnosis;
         boolean containsDrug;
         for (int i = 0; i < totalAprioriRule.size(); i++) {
@@ -168,30 +169,45 @@ public class BaggingService {
                 } else if (isAllDrugs(part1) && isAllDiagnoses(part2)) {
                     drug2DiagnosisList.add(totalAprioriRule.get(i));
                 }
+                allContainsList.add(totalAprioriRule.get(i));
             }
         }
 
-        for (AprioriRuleWithBelieveDegree aprioriRule : diagnosis2DrugList){
-            if (aprioriRule.getBelieveDegree() >= MIN_BELIEVE_DEGREE){
-                aprioriRuleViews.add(changeAprioriRule2AprioriRuleView(aprioriRule));
-                for (DrugView drugView : drugViews){
-                    if (aprioriRule.getRule().contains(String.valueOf(drugView.getId()))){
-                        drugView.setJudgeResult(DrugView.JudgeState.APRIORI_PASS);
-                    }
+        for (AprioriRuleWithBelieveDegree aprioriRule : allContainsList){
+//            if (aprioriRule.getBelieveDegree() < MIN_BELIEVE_DEGREE){
+//                continue;
+//            }
+            aprioriRuleViews.add(changeAprioriRule2AprioriRuleView(aprioriRule));
+            for (DrugView drugView : drugViews){
+                if (aprioriRule.getRule().contains(String.valueOf(drugView.getId()))){
+                    drugView.setJudgeResult(DrugView.JudgeState.APRIORI_PASS);
                 }
             }
         }
 
-        for (AprioriRuleWithBelieveDegree aprioriRule : drug2DiagnosisList){
-            if (aprioriRule.getBelieveDegree() >= MIN_BELIEVE_DEGREE){
-                aprioriRuleViews.add(changeAprioriRule2AprioriRuleView(aprioriRule));
-                for (DrugView drugView : drugViews){
-                    if (aprioriRule.getRule().contains(String.valueOf(drugView.getId()))){
-                        drugView.setJudgeResult(DrugView.JudgeState.APRIORI_PASS);
-                    }
-                }
-            }
-        }
+//        for (AprioriRuleWithBelieveDegree aprioriRule : diagnosis2DrugList){
+////            if (aprioriRule.getBelieveDegree() < MIN_BELIEVE_DEGREE){
+////                continue;
+////            }
+//            aprioriRuleViews.add(changeAprioriRule2AprioriRuleView(aprioriRule));
+//            for (DrugView drugView : drugViews){
+//                if (aprioriRule.getRule().contains(String.valueOf(drugView.getId()))){
+//                    drugView.setJudgeResult(DrugView.JudgeState.APRIORI_PASS);
+//                }
+//            }
+//        }
+//
+//        for (AprioriRuleWithBelieveDegree aprioriRule : drug2DiagnosisList){
+////            if (aprioriRule.getBelieveDegree() < MIN_BELIEVE_DEGREE){
+////                continue;
+////            }
+//            aprioriRuleViews.add(changeAprioriRule2AprioriRuleView(aprioriRule));
+//            for (DrugView drugView : drugViews){
+//                if (aprioriRule.getRule().contains(String.valueOf(drugView.getId()))){
+//                    drugView.setJudgeResult(DrugView.JudgeState.APRIORI_PASS);
+//                }
+//            }
+//        }
     }
 
     private void ldaAnalyze(Sample sample, List<LDAView> ldaViews, List<DrugView> drugViews){
@@ -207,6 +223,31 @@ public class BaggingService {
         }
     }
 
+    private void kmeansAnalyze(Sample sample, List<KmeansView> kmeansViews, List<DrugView> drugViews){
+        Kmeans kmeans = new Kmeans(totalSamples);
+        for (Integer drug : sample.getDrugs()){
+            List<Integer> range = kmeans.getDrugRange(drug);
+            kmeansViews.add(new KmeansView(drug,
+                    drugStrList.get(drug-20000),
+                    range.get(0).toString() + "-" + range.get(1).toString(),
+                    range.get(2).toString() + "-" + range.get(3).toString(),
+                    ">" + range.get(3).toString()));
+            for (DrugView drugView: drugViews){
+                if (drugView.getId() == drug){
+                    if (drugView.getJudgeResult() != DrugView.JudgeState.UN_USUAL){
+                        if (drugView.getAmount() < range.get(2)){
+                            drugView.setJudgeResult(DrugView.JudgeState.PASS);
+                        }else if (drugView.getAmount() <= range.get(3)){
+                            drugView.setJudgeResult(DrugView.JudgeState.MORE);
+                        }else {
+                            drugView.setJudgeResult(DrugView.JudgeState.MUCH_MORE);
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    }
 
     private boolean isAllDiagnoses(String[] part){
         for (String str:part){
@@ -293,6 +334,7 @@ public class BaggingService {
         List<AprioriRuleView> aprioriRuleViews = new ArrayList<>();
         List<DrugView> drugViews = new ArrayList<>(sample.getDrugs().size());
         List<LDAView> ldaViews = new ArrayList<>(sample.getDiagnoses().size());
+        List<KmeansView> kmeansViews = new ArrayList<>(sample.getDrugs().size());
         for (DrugDetail drugDetail : sample.getDrugDetails()){
             drugViews.add(new DrugView(drugDetail.getDrugId(),
                     drugStrList.get(drugDetail.getDrugId()-20000),
@@ -304,6 +346,14 @@ public class BaggingService {
 
         ldaAnalyze(sample, ldaViews, drugViews);
         result.setLdaViews(ldaViews);
+        for (DrugView drugView: drugViews){
+            if (drugView.getJudgeResult() == DrugView.JudgeState.INIT){
+                drugView.setJudgeResult(DrugView.JudgeState.UN_USUAL);
+            }
+        }
+
+        kmeansAnalyze(sample, kmeansViews, drugViews);
+        result.setKmeansViews(kmeansViews);
         result.setDrugViews(drugViews);
         return result;
     }

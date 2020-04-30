@@ -95,7 +95,7 @@
                         <td th:text="${drugView.getName()}"/>
                         <td th:text="${drugView.getAmount()}"/>
                         <td th:text="${drugView.getUnit()}"/>
-                        <td th:text="${drugView.getJudgeResult()}"/>
+                        <td th:text="${drugView.getJudgeResultStr()}"/>
                     </tr>
                     </tbody>
                 </table>
@@ -146,6 +146,32 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            <div class="table-responsive">
+                <h2>
+                    K-means分析过程
+                </h2>
+                <table class="table table-striped table-sm">
+                    <thead>
+                    <tr>
+                        <th>药物ID</th>
+                        <th>药物名</th>
+                        <th>正常范围</th>
+                        <th>偏多范围</th>
+                        <th>过多范围</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="kmeansView:${kmeansViews}">
+                        <td th:text="${kmeansView.getDrugId()}"/>
+                        <td th:text="${kmeansView.getDrugName()}"/>
+                        <td th:text="${kmeansView.getNormal()}"/>
+                        <td th:text="${kmeansView.getMore()}"/>
+                        <td th:text="${kmeansView.getMuchMore()}"/>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
         </main>
     </div>

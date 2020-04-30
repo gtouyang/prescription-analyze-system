@@ -36,9 +36,6 @@ public class AddController {
         Sample sample = prescriptionView.toSample();
         baggingService.aprioriInit();
         BaggingResult result = baggingService.judge(sample);
-        List<DrugView> drugViews = result.getDrugViews();
-        List<AprioriRuleView> aprioriRuleViews = result.getAprioriRuleViews();
-        List<LDAView> ldaViews = result.getLdaViews();
 
         List<Integer> diagnoses = sample.getDiagnoses();
         List<String> diagnosesStr = new ArrayList<>(4);
@@ -51,9 +48,10 @@ public class AddController {
         }
         model.addAttribute("diagnoses", diagnosesStr);
 
-        model.addAttribute("drugViews", drugViews);
-        model.addAttribute("aprioriRuleViews", aprioriRuleViews);
-        model.addAttribute("ldaViews", ldaViews);
+        model.addAttribute("drugViews", result.getDrugViews());
+        model.addAttribute("aprioriRuleViews", result.getAprioriRuleViews());
+        model.addAttribute("ldaViews", result.getLdaViews());
+        model.addAttribute("kmeansViews", result.getKmeansViews());
         return "add-judge";
     }
 }
