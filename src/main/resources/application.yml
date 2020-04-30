@@ -29,3 +29,19 @@ spring:
 logging:
   level:
     root: info
+
+bagging:
+  setting:
+    excel:
+      path: /home/ogic/Desktop/data.xls
+      sheet: 1
+
+    apriori:
+      minBelieveDegree: 0.2
+
+    lda:
+      alpha: 0.5f
+      beta: 0.1f
+      iteration: 1000
+      saveStep: 0
+      beginSaveIters: 0

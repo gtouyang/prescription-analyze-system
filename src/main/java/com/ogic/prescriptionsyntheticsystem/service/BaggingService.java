@@ -2,21 +2,17 @@ package com.ogic.prescriptionsyntheticsystem.service;
 
 import com.ogic.prescriptionsyntheticsystem.component.SampleCleanTool;
 import com.ogic.prescriptionsyntheticsystem.component.SampleImportTool;
-import com.ogic.prescriptionsyntheticsystem.entity.AprioriRuleView;
-import com.ogic.prescriptionsyntheticsystem.entity.AprioriRuleWithBelieveDegree;
-import com.ogic.prescriptionsyntheticsystem.entity.Selection;
-import com.ogic.prescriptionsyntheticsystem.entity.Sample;
+import com.ogic.prescriptionsyntheticsystem.entity.*;
 import com.ogic.prescriptionsyntheticsystem.exception.UnitUnfixedException;
 import com.ogic.prescriptionsyntheticsystem.mapper.AprioriRuleWithBelieveDegreeMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author ogic
@@ -34,9 +30,30 @@ public class BaggingService {
 
     private List<Selection> drugSelectionList;
 
-    private List<AprioriRuleWithBelieveDegree> diagnosis2DrugList;
+    private List<AprioriRuleWithBelieveDegree> totalAprioriRule;
 
-    private List<AprioriRuleWithBelieveDegree> drug2DiagnosisList;
+    private List<LDAView> totalLdaResult;
+
+    @Value("${bagging.setting.excel.path}")
+    private String excelFilePath = "/home/ogic/Desktop/data.xls";
+
+    @Value("${bagging.setting.apriori.minBelieveDegree}")
+    private double MIN_BELIEVE_DEGREE = 0.2;
+
+    @Value("${bagging.setting.lda.alpha}")
+    private float alpha = 0.5f;
+
+    @Value("${bagging.setting.lda.beta}")
+    private float beta = 0.1f;
+
+    @Value("${bagging.setting.lda.iteration}")
+    private int iteration = 1000;
+
+    @Value("${bagging.setting.lda.saveStep}")
+    private int saveStep = 0;
+
+    @Value("${bagging.setting.lda.beginSaveIters}")
+    private int beginSaveIters = 0;
 
     @Resource
     private AprioriRuleWithBelieveDegreeMapper aprioriRuleWithBelieveDegreeMapper;
@@ -44,7 +61,7 @@ public class BaggingService {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public BaggingService() throws IOException {
-        SampleImportTool sampleImportTool = new SampleImportTool("/home/ogic/Desktop/data.xls");
+        SampleImportTool sampleImportTool = new SampleImportTool(excelFilePath);
         try {
             sampleImportTool.readExcel(1);
         }catch (UnitUnfixedException e){
@@ -67,6 +84,18 @@ public class BaggingService {
         for (int i = 0; i < drugStrList.size(); i++){
             drugSelectionList.add(new Selection(20000+i, drugStrList.get(i)));
         }
+
+        Lda model = new Lda(alpha, beta, iteration, saveStep, beginSaveIters);
+        System.out.println("1 Initialize the lda model ...");
+        model.initializeModel(totalSamples, diagnosisStrList ,drugStrList);
+        System.out.println("2 Learning and Saving the lda model ...");
+        model.inferenceModel();
+        totalLdaResult = model.getNormalDrug();
+        System.out.println("Done!");
+    }
+
+    public void aprioriInit(){
+        totalAprioriRule = aprioriRuleWithBelieveDegreeMapper.getAllAprioriRuleWithBelieveDegreeList();
     }
 
     public List<Selection> getDiagnosisSelectionList() {
@@ -78,35 +107,106 @@ public class BaggingService {
     }
 
 
-    public void aprioriAnalyze(List<Integer> targetElements){
-        List<AprioriRuleWithBelieveDegree> list = aprioriRuleWithBelieveDegreeMapper.getAllAprioriRuleWithBelieveDegreeList();
-        diagnosis2DrugList = new ArrayList<>();
-        drug2DiagnosisList = new ArrayList<>();
+    public void aprioriAnalyzeByDiagnoses(List<Integer> targetElements, List<AprioriRuleView> aprioriRuleViews){
+        List<AprioriRuleWithBelieveDegree> diagnosis2DrugList = new ArrayList<>();
+        List<AprioriRuleWithBelieveDegree> drug2DiagnosisList = new ArrayList<>();
         boolean flag;
-        for (int i = 0; i < list.size(); i++){
+        for (int i = 0; i < totalAprioriRule.size(); i++){
             flag = false;
             for (int element: targetElements){
-                if (list.get(i).getRule().contains(String.valueOf(element))){
+                if (totalAprioriRule.get(i).getRule().contains(String.valueOf(element))){
                     flag = true;
-                    String rule = list.get(i).getRule();
+                    String rule = totalAprioriRule.get(i).getRule();
                     String[] parts = rule.split("=>");
                     String[] part1 = parts[0].substring(1, parts[0].length()-1).split(", ");
                     String[] part2 = parts[1].substring(1, parts[1].length()-1).split(", ");
                     if (isAllDiagnoses(part1) && isAllDrugs(part2)){
-                        diagnosis2DrugList.add(list.get(i));
+                        diagnosis2DrugList.add(totalAprioriRule.get(i));
                     }
                     else if (isAllDrugs(part1) && isAllDiagnoses(part2)){
-                        drug2DiagnosisList.add(list.get(i));
+                        drug2DiagnosisList.add(totalAprioriRule.get(i));
                     }
                     break;
                 }
             }
             if (!flag){
-                list.remove(i);
+                totalAprioriRule.remove(i);
                 i--;
             }
         }
+
     }
+
+    private void aprioriAnalyzeBySamples(Sample sample, List<AprioriRuleView> aprioriRuleViews, List<DrugView> drugViews){
+
+        List<AprioriRuleWithBelieveDegree> diagnosis2DrugList = new ArrayList<>();
+        List<AprioriRuleWithBelieveDegree> drug2DiagnosisList = new ArrayList<>();
+        boolean containsDiagnosis;
+        boolean containsDrug;
+        for (int i = 0; i < totalAprioriRule.size(); i++) {
+            containsDiagnosis = false;
+            containsDrug = false;
+            for (Integer diagnosis : sample.getDiagnoses()) {
+                if (totalAprioriRule.get(i).getRule().contains(diagnosis.toString())) {
+                    containsDiagnosis = true;
+                    break;
+                }
+            }
+            for (Integer drug : sample.getDrugs()){
+                if (totalAprioriRule.get(i).getRule().contains(drug.toString())){
+                    containsDrug = true;
+                    break;
+                }
+            }
+            if (containsDiagnosis && containsDrug) {
+                String rule = totalAprioriRule.get(i).getRule();
+                String[] parts = rule.split("=>");
+                String[] part1 = parts[0].substring(1, parts[0].length() - 1).split(", ");
+                String[] part2 = parts[1].substring(1, parts[1].length() - 1).split(", ");
+                if (isAllDiagnoses(part1) && isAllDrugs(part2)) {
+                    diagnosis2DrugList.add(totalAprioriRule.get(i));
+                } else if (isAllDrugs(part1) && isAllDiagnoses(part2)) {
+                    drug2DiagnosisList.add(totalAprioriRule.get(i));
+                }
+            }
+        }
+
+        for (AprioriRuleWithBelieveDegree aprioriRule : diagnosis2DrugList){
+            if (aprioriRule.getBelieveDegree() >= MIN_BELIEVE_DEGREE){
+                aprioriRuleViews.add(changeAprioriRule2AprioriRuleView(aprioriRule));
+                for (DrugView drugView : drugViews){
+                    if (aprioriRule.getRule().contains(String.valueOf(drugView.getId()))){
+                        drugView.setJudgeResult(DrugView.JudgeState.APRIORI_PASS);
+                    }
+                }
+            }
+        }
+
+        for (AprioriRuleWithBelieveDegree aprioriRule : drug2DiagnosisList){
+            if (aprioriRule.getBelieveDegree() >= MIN_BELIEVE_DEGREE){
+                aprioriRuleViews.add(changeAprioriRule2AprioriRuleView(aprioriRule));
+                for (DrugView drugView : drugViews){
+                    if (aprioriRule.getRule().contains(String.valueOf(drugView.getId()))){
+                        drugView.setJudgeResult(DrugView.JudgeState.APRIORI_PASS);
+                    }
+                }
+            }
+        }
+    }
+
+    private void ldaAnalyze(Sample sample, List<LDAView> ldaViews, List<DrugView> drugViews){
+        for (Integer diagnosis: sample.getDiagnoses()){
+            ldaViews.add(totalLdaResult.get(diagnosis-10000));
+        }
+        for (LDAView ldaView : ldaViews){
+            for (DrugView drugView: drugViews){
+                if (ldaView.getDrugIDList().contains(drugView.getId())){
+                    drugView.setJudgeResult(DrugView.JudgeState.LDA_PASS);
+                }
+            }
+        }
+    }
+
 
     private boolean isAllDiagnoses(String[] part){
         for (String str:part){
@@ -180,14 +280,31 @@ public class BaggingService {
         return result;
     }
 
-    public List<AprioriRuleView> getDiagnosis2DrugAprioriRuleViewList() {
-        List<AprioriRuleView> result = new ArrayList<>(diagnosis2DrugList.size());
-        for (AprioriRuleWithBelieveDegree rule : diagnosis2DrugList){
+    private AprioriRuleView changeAprioriRule2AprioriRuleView(AprioriRuleWithBelieveDegree rule) {
             String[] parts = rule.getRule().split("=>");
             String[] part1 = parts[0].substring(1, parts[0].length()-1).split(", ");
             String[] part2 = parts[1].substring(1, parts[1].length()-1).split(", ");
-            result.add(new AprioriRuleView(rule.getRule(), Arrays.toString(id2Name(part1)) + "=>" + Arrays.toString(id2Name(part2)), rule.getBelieveDegree()));
+            return new  AprioriRuleView(rule.getRule(), Arrays.toString(id2Name(part1)) + "=>" + Arrays.toString(id2Name(part2)), rule.getBelieveDegree());
+    }
+
+
+    public BaggingResult judge(Sample sample){
+        BaggingResult result = new BaggingResult();
+        List<AprioriRuleView> aprioriRuleViews = new ArrayList<>();
+        List<DrugView> drugViews = new ArrayList<>(sample.getDrugs().size());
+        List<LDAView> ldaViews = new ArrayList<>(sample.getDiagnoses().size());
+        for (DrugDetail drugDetail : sample.getDrugDetails()){
+            drugViews.add(new DrugView(drugDetail.getDrugId(),
+                    drugStrList.get(drugDetail.getDrugId()-20000),
+                    drugDetail.getAmount(),
+                    drugDetail.getUnit()));
         }
+        aprioriAnalyzeBySamples(sample, aprioriRuleViews, drugViews);
+        result.setAprioriRuleViews(aprioriRuleViews);
+
+        ldaAnalyze(sample, ldaViews, drugViews);
+        result.setLdaViews(ldaViews);
+        result.setDrugViews(drugViews);
         return result;
     }
 }

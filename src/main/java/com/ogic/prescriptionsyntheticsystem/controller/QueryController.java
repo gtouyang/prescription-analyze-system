@@ -56,9 +56,8 @@ public class QueryController {
             }
         }
 
-        baggingService.aprioriAnalyze(diagnoses);
-
-        List<AprioriRuleView> aprioriRuleViews = baggingService.getDiagnosis2DrugAprioriRuleViewList();
+        List<AprioriRuleView> aprioriRuleViews = new ArrayList<>();
+        baggingService.aprioriAnalyzeByDiagnoses(diagnoses, aprioriRuleViews);
 
         model.addAttribute("aprioriRules", aprioriRuleViews);
 

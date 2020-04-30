@@ -1,0 +1,43 @@
+{
+  "properties": [
+    {
+      "name": "bagging.setting.excel.path",
+      "type": "java.lang.String",
+      "description": "Description for bagging.setting.excel.path."
+    },
+    {
+      "name": "bagging.setting.excel.sheet",
+      "type": "java.lang.Integer",
+      "description": "Description for bagging.setting.excel.sheet."
+    },
+    {
+      "name": "bagging.setting.apriori.minBelieveDegree",
+      "type": "java.lang.Double",
+      "description": "Description for bagging.setting.apriori.minBelieveDegree."
+    },
+    {
+      "name": "bagging.setting.lda.alpha",
+      "type": "java.lang.Float",
+      "description": "Description for bagging.setting.lda.alpha."
+    },
+    {
+      "name": "bagging.setting.lda.beta",
+      "type": "java.lang.Float",
+      "description": "Description for bagging.setting.lda.beta."
+    },
+    {
+      "name": "bagging.setting.lda.iteration",
+      "type": "java.lang.Integer",
+      "description": "Description for bagging.setting.lda.iteration."
+    },
+    {
+      "name": "bagging.setting.lda.saveStep",
+      "type": "java.lang.Integer",
+      "description": "Description for bagging.setting.lda.saveStep."
+    },
+    {
+      "name": "bagging.setting.lda.beginSaveIters",
+      "type": "java.lang.Integer",
+      "description": "Description for bagging.setting.lda.beginSaveIters."
+    }
+  ] }

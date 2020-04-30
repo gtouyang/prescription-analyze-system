@@ -16,11 +16,47 @@ public class DrugView {
 
     private String unit;
 
+    private JudgeState judgeResult;
+
+    public enum JudgeState{
+
+        /**
+         * 初始化
+         */
+        INIT,
+
+        /**
+         * Apriori通过
+         */
+        APRIORI_PASS,
+
+        /**
+         * lda通过
+         */
+        LDA_PASS,
+
+        /**
+         * 不常见
+         */
+        UN_USUAL,
+
+        /**
+         * 偏多
+         */
+        MORE,
+
+        /**
+         * 过多
+         */
+        TOO_MUCH_MORE
+    }
+
     public DrugView(int id, String name, int amount, String unit) {
         this.id = id;
         this.name = name;
         this.amount = amount;
         this.unit = unit;
+        this.judgeResult = JudgeState.INIT;
     }
 
     public int getId() {
@@ -37,5 +73,20 @@ public class DrugView {
 
     public String getUnit() {
         return unit;
+    }
+
+    public DrugView setJudgeResult(JudgeState judgeResult) {
+        this.judgeResult = judgeResult;
+        return this;
+    }
+
+    public String getJudgeResult() {
+        switch (judgeResult){
+            case INIT: return "未计算";
+            case UN_USUAL: return "不常见用药";
+            case MORE: return "偏多";
+            case TOO_MUCH_MORE: return "过多";
+            default: return "常见用药";
+        }
     }
 }

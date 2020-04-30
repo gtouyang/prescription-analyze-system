@@ -1,14 +1,12 @@
 package com.ogic.prescriptionsyntheticsystem.service;
 
+import com.ogic.prescriptionsyntheticsystem.entity.LDAView;
 import com.ogic.prescriptionsyntheticsystem.entity.Sample;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Mr.chen
@@ -185,13 +183,15 @@ public class Lda {
         }
         for(int i = 0; i < iterations; i++){
             System.out.println("Iteration " + i);
-            if((i >= beginSaveIters) && (((i - beginSaveIters) % saveStep) == 0)){
-                //Saving the model
-                System.out.println("Saving model at iteration " + i +" ... ");
-                //Firstly update parameters
-                updateEstimatedParameters();
-                //Secondly print model variables
-                saveIteratedModel(i);
+            if (saveStep > 0 && beginSaveIters < iterations) {
+                if ((i >= beginSaveIters) && (((i - beginSaveIters) % saveStep) == 0)) {
+                    //Saving the model
+                    System.out.println("Saving model at iteration " + i + " ... ");
+                    //Firstly update parameters
+                    updateEstimatedParameters();
+                    //Secondly print model variables
+                    saveIteratedModel(i);
+                }
             }
 
             //使用 Gibbs Sampling 更新 z[][]
@@ -338,7 +338,7 @@ public class Lda {
     }
 
     /*药物排序辅助方法*/
-    public static class TdrugsComparable implements Comparator<Integer> {
+    private static class TdrugsComparable implements Comparator<Integer> {
 
         public double [] sortProb; // Store probability of each drug in diagnosis k
 
@@ -352,5 +352,25 @@ public class Lda {
             //Sort diagnosis drug index according to the probability of each drug in diagnosis k
             return Double.compare(sortProb[o2], sortProb[o1]);
         }
+    }
+
+    public List<LDAView> getNormalDrug() {
+        updateEstimatedParameters();
+        int topNum = 20;
+        List<LDAView> result = new ArrayList<>(allDiagnosisSize);
+        for (int i = 0; i < allDiagnosisSize; i++) {
+            List<Integer> tDrugsIndexArray = new ArrayList<>();
+            for (int j = 0; j < allDrugSize; j++) {
+                tDrugsIndexArray.add(j);
+            }
+            LDAView view = new LDAView(i+10000, diagnosisStrList.get(i), topNum);
+            /*排序,将出现次数多的药物排在前面*/
+            tDrugsIndexArray.sort(new TdrugsComparable(phi[i]));
+            for (int t = 0; t < topNum; t++) {
+                view.addDrug(tDrugsIndexArray.get(t)+20000, drugStrList.get(tDrugsIndexArray.get(t)), phi[i][tDrugsIndexArray.get(t)]);
+            }
+            result.add(view);
+        }
+        return result;
     }
 }
