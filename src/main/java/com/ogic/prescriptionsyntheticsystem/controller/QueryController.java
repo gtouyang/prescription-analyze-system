@@ -1,6 +1,7 @@
 package com.ogic.prescriptionsyntheticsystem.controller;
 
 import com.ogic.prescriptionsyntheticsystem.entity.AprioriRuleView;
+import com.ogic.prescriptionsyntheticsystem.entity.BaggingResult;
 import com.ogic.prescriptionsyntheticsystem.entity.DrugView;
 import com.ogic.prescriptionsyntheticsystem.service.BaggingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,11 +56,12 @@ public class QueryController {
                 i--;
             }
         }
+        baggingService.aprioriInit();
+        BaggingResult result = baggingService.query(diagnoses);
 
-        List<AprioriRuleView> aprioriRuleViews = new ArrayList<>();
-        baggingService.aprioriAnalyzeByDiagnoses(diagnoses, aprioriRuleViews);
-
-        model.addAttribute("aprioriRules", aprioriRuleViews);
+        model.addAttribute("aprioriRuleViews", result.getAprioriRuleViews());
+        model.addAttribute("ldaViews", result.getLdaViews());
+        model.addAttribute("kmeansViews", result.getKmeansViews());
 
         List<DrugView> drugViews = new ArrayList<>(3);
         drugViews.add(new DrugView(20049, "二甲双胍片", 48, "片"));

@@ -173,9 +173,22 @@
                     </tbody>
                 </table>
             </div>
+
+            <a class="btn-lg" th:href="@{query}">
+                返回修改
+            </a>
+            <a class="btn-lg" th:href="@{index}" onclick="submitTip()">
+                提交
+            </a>
         </main>
     </div>
 </div>
+
+<script>
+    function submitTip() {
+        alert("提交成功");
+    }
+</script>
 
 <!-- Bootstrap core JavaScript
 ================================================== -->

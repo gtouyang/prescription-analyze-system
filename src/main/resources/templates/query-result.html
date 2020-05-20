@@ -101,7 +101,7 @@
 
             <div class="table-responsive">
                 <h2>
-                    分析过程
+                    Apriori分析过程
                 </h2>
                 <table class="table table-striped table-sm">
                     <thead>
@@ -112,10 +112,61 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="aprioriRule:${aprioriRules}">
+                    <tr th:each="aprioriRule:${aprioriRuleViews}">
                         <td th:text="${aprioriRule.getRuleInId()}"/>
                         <td th:text="${aprioriRule.getRuleInName()}"/>
                         <td th:text="${aprioriRule.getRuleValue()}"/>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-responsive">
+                <h2>
+                    LDA分析过程
+                </h2>
+                <div th:each="ldaView:${ldaViews}">
+                    <h3 th:text="${ldaView.getDiagnosisName()}"></h3>
+                    <table class="table table-striped table-sm">
+                        <thead>
+                        <tr>
+                            <th>药品ID</th>
+                            <th>药品名</th>
+                            <th>频率</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="id:${ldaView.getDrugIDList()}">
+                            <td th:text="${id}"/>
+                            <td th:text="${ldaView.getDrugNameList().get(ldaView.getDrugIDList().indexOf(id))}"/>
+                            <td th:text="${ldaView.getFormatDrugPhi(ldaView.getDrugIDList().indexOf(id))}"/>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <h2>
+                    K-means分析过程
+                </h2>
+                <table class="table table-striped table-sm">
+                    <thead>
+                    <tr>
+                        <th>药物ID</th>
+                        <th>药物名</th>
+                        <th>正常范围</th>
+                        <th>偏多范围</th>
+                        <th>过多范围</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="kmeansView:${kmeansViews}">
+                        <td th:text="${kmeansView.getDrugId()}"/>
+                        <td th:text="${kmeansView.getDrugName()}"/>
+                        <td th:text="${kmeansView.getNormal()}"/>
+                        <td th:text="${kmeansView.getMore()}"/>
+                        <td th:text="${kmeansView.getMuchMore()}"/>
                     </tr>
                     </tbody>
                 </table>
